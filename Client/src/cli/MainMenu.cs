@@ -9,29 +9,44 @@ namespace Client.Cli
     {
         /* --- ATTRIBUTES --- */
 
+        /// <summary>
+        /// Index of login menu entry.
+        /// </summary>
+        public const int LOGIN = 0;
+
+        /// <summary>
+        /// Index of register menu entry.
+        /// </summary>
+        public const int REGISTER = 1;
+
+        /// <summary>
+        /// Index of exit menu entry.
+        /// </summary>
+        public const int EXIT = 2;
+
 
         /* --- METHODS --- */
 
-        public MainMenu(Client client) : base(client, "Main Menu", new String[] { "Login", "Exit" })
+        public MainMenu(Client client) : base(client, "Main Menu", new string[] { "Login", "Register", "Exit" })
         {
 
         }
 
 
-        public override Menu ProcessInput(String input)
+        public override Menu ProcessInput(string input)
         {
             int i;
             if (int.TryParse(input, out i) && i > 0 && i <= options.Length)
             {
                 switch (--i)
                 {
-                    // Login
-                    case 0:
+                    case LOGIN:
                         {
+
                             Console.Write("Username: ");
-                            String username = Console.ReadLine();
+                            string username = Console.ReadLine();
                             Console.Write("Password: ");
-                            String password = Console.ReadLine();
+                            string password = Console.ReadLine();
 
                             // login
                             client.Login(username, password);
@@ -40,11 +55,30 @@ namespace Client.Cli
                             break;
                         }
 
-                    // Exit
-                    case 1:
+                    case REGISTER:
                         {
+
+                            Console.Write("Name: ");
+                            string name = Console.ReadLine();
+                            Console.Write("Username: ");
+                            string username = Console.ReadLine();
+                            Console.Write("Password: ");
+                            string password = Console.ReadLine();
+
+                            // register
+                            client.Register(name, username, password);
+
+                            // TODO return next menu
+
+                            break;
+
+                        }
+                    case EXIT:
+                        {
+
                             return null;
                         }
+
 
                     // Invalid
                     default:

@@ -15,7 +15,7 @@ namespace Server
         public const string SQL_PATH = "../../db/db.sql";
 
 
-        public static void init(bool overwrite = false)
+        public static void Init(bool overwrite = false)
         {
 
             if (!File.Exists(DB_PATH))
@@ -58,7 +58,7 @@ namespace Server
 
         }
 
-        public static bool insertUser(string UserName, string NickName, string Password)
+        public static bool InsertUser(string UserName, string NickName, string Password)
         {
 
 
@@ -92,7 +92,7 @@ namespace Server
         }
 
 
-        public static bool login(string Nick, string Password)
+        public static bool Login(string Nick, string Password)
         {
             com.CommandText = "SELECT * FROM User WHERE nickname = @user AND password = @pass";
             com.Parameters.Add(new SQLiteParameter("@user", Nick));
@@ -121,12 +121,12 @@ namespace Server
         }
 
 
-        public static void logout()
+        public static void Logout()
         {
 
         }
 
-        public static void registerUser()
+        public static void RegisterUser()
         {
 
         }

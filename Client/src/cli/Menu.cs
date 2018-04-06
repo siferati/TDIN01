@@ -12,12 +12,12 @@ namespace Client.Cli
         /// <summary>
         /// The list of options of this menu state.
         /// </summary>
-        protected String[] options;
+        protected string[] options;
 
         /// <summary>
         /// Title of this menu state.
         /// </summary>
-        protected String title;
+        protected string title;
 
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace Client.Cli
         /// Super constructor called by subclasses.
         /// </summary>
         /// <param name="options">List of options of menu state</param>
-        public Menu(Client client, String title, String[] options)
+        public Menu(Client client, string title, string[] options)
         {
             this.client = client;
             this.title = title;
@@ -45,10 +45,10 @@ namespace Client.Cli
         /// </summary>
         /// <param name="input">User input.</param>
         /// <returns>New menu state.</returns>
-        public abstract Menu ProcessInput(String input);
+        public abstract Menu ProcessInput(string input);
 
 
-        public override String ToString()
+        public override string ToString()
         {
             String str = "----------";
             str += "\n" + title + "\n\n";

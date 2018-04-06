@@ -37,7 +37,7 @@ namespace Client.Cli
             while (menu != null)
             {
                 Console.Write(menu);
-                String input = Console.ReadLine();
+                string input = Console.ReadLine();
                 menu = menu.ProcessInput(input);
             }
         }

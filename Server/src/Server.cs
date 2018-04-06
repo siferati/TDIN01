@@ -20,7 +20,7 @@ namespace Server
         {
 
             Console.WriteLine("Starting...");
-            DB.init();
+            DB.Init();
 
             // register the channel
             TcpChannel ch = new TcpChannel(9000);
@@ -34,26 +34,6 @@ namespace Server
 
             Console.WriteLine("Waiting for a client to connect...");
             Console.WriteLine("Pess any key to shutdown the server.");
-            Console.ReadLine();
-
-            DB.insertUser("Pascoal", "Pasc", "Pass");
-            if (DB.login("Pasc", "Pass"))
-                Console.WriteLine("FUNCIONOU");
-            else
-                Console.WriteLine("Foda-se");
-
-
-            if (DB.login("Pasc", "Passs"))
-                Console.WriteLine("Foda-se");
-            else
-                Console.WriteLine("FUNCIONOU");
-
-            DB.insertUser("Pacs", "Pla", "Passs");
-            if (DB.login("Pla", "Passs"))
-                Console.WriteLine("FUNCIONOU");
-            else
-                Console.WriteLine("Foda-se");
-
             Console.ReadLine();
         }
 
@@ -82,7 +62,6 @@ namespace Server
         }
 
 
-        // TODO
         /// <summary>
         /// Logs the user into the system.
         /// </summary>
@@ -93,7 +72,7 @@ namespace Server
         {
             Log("Client is trying to login...");
 
-            if (DB.login(username, password))
+            if (DB.Login(username, password))
             {
                 Log("Password and username match. User allowed to login.");
                 return true;
@@ -101,6 +80,30 @@ namespace Server
             else
             {
                 Log("Password and username don't match. User not allowed to login.");
+                return false;
+            }
+        }
+
+
+        /// <summary>
+        /// Registers a new user into the system.
+        /// </summary>
+        /// <param name="name">Name of the user.</param>
+        /// <param name="username">Username.</param>
+        /// <param name="password">Password.</param>
+        /// <returns>TRUE if new user was created, FALSE otherwise.</returns>
+        public bool Register(string name, string username, string password)
+        {
+            Log("Client is trying to register a new user...");
+
+            if (DB.InsertUser(name, username, password))
+            {
+                Log("New user created.");
+                return true;
+            }
+            else
+            {
+                Log("User already exists.");
                 return false;
             }
         }

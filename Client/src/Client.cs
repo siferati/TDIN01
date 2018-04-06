@@ -54,7 +54,6 @@ namespace Client
         /// </summary>
         /// <param name="username">Username.</param>
         /// <param name="password">Password.</param>
-        /// <returns>TRUE if username and passsword match, FALSE otherwise.</returns>
         public void Login(string username, string password)
         {
             Log("Attempting to login...");
@@ -66,6 +65,27 @@ namespace Client
             else
             {
                 Log("Failted to login!");
+            }
+        }
+
+
+        /// <summary>
+        /// Registers a new user into the system.
+        /// </summary>
+        /// <param name="name">Name of the user.</param>
+        /// <param name="username">Username.</param>
+        /// <param name="password">Password.</param>
+        public void Register(String name, String username, String password)
+        {
+            Log("Attempting to register a new user...");
+
+            if (server.Register(name, username, password))
+            {
+                Log("Registration successful!");
+            }
+            else
+            {
+                Log("Failted to register!");
             }
         }
 

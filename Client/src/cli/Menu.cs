@@ -50,7 +50,7 @@ namespace Client.Cli
 
         public override string ToString()
         {
-            String str = "----------";
+            String str = "\n----------";
             str += "\n" + title + "\n\n";
             for (int i = 0; i < options.Length; i++)
             {

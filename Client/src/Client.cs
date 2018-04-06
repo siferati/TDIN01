@@ -54,17 +54,20 @@ namespace Client
         /// </summary>
         /// <param name="username">Username.</param>
         /// <param name="password">Password.</param>
-        public void Login(string username, string password)
+        /// <returns>TRUE if user was able to login, FALSE otherwise.</returns>
+        public bool Login(string username, string password)
         {
             Log("Attempting to login...");
 
             if (server.Login(username, password))
             {
                 Log("Login successful!");
+                return true;
             }
             else
             {
                 Log("Failted to login!");
+                return false;
             }
         }
 
@@ -75,17 +78,20 @@ namespace Client
         /// <param name="name">Name of the user.</param>
         /// <param name="username">Username.</param>
         /// <param name="password">Password.</param>
-        public void Register(String name, String username, String password)
+        /// <returns>TRUE if user was able to register, FALSE otherwise.</returns>
+        public bool Register(String name, String username, String password)
         {
             Log("Attempting to register a new user...");
 
             if (server.Register(name, username, password))
             {
                 Log("Registration successful!");
+                return true;
             }
             else
             {
                 Log("Failted to register!");
+                return false;
             }
         }
 

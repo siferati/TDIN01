@@ -45,6 +45,7 @@
     <Compile Include="src\Client.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\cli\CLI.cs" />
+    <Compile Include="src\cli\InitialMenu.cs" />
     <Compile Include="src\cli\MainMenu.cs" />
     <Compile Include="src\cli\Menu.cs" />
   </ItemGroup>

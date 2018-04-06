@@ -1,17 +1,38 @@
-DROP TABLE IF EXISTS User;
-CREATE TABLE User (
-	userId INTEGER PRIMARY KEY,
+/*
+.mode columns
+.headers on
+.nullvalue NULL
+PRAGMA FOREIGN_KEYS = ON;
+*/
+
+CREATE TABLE Users (
+	id INTEGER PRIMARY KEY,
+	name TEXT  NOT NULL,
 	username TEXT  NOT NULL UNIQUE,
-	nickname TEXT  NOT NULL,
-	password TEXT  NOT NULL,
-	balance INTEGER
-	
+	password TEXT  NOT NULL
 );
 
-DROP TABLE IF EXISTS Diginote;
-CREATE TABLE Diginote (
+CREATE TABLE Diginotes (
 	id INTEGER PRIMARY KEY,
 	userId INTEGER NOT NULL,
-	FOREIGN KEY (userId) REFERENCES User(userId)
+	FOREIGN KEY (userId) REFERENCES Users(id)
 );
 
+CREATE Table Quote (
+	id INTEGER PRIMARY KEY,
+	timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+	value REAL NOT NULL
+);
+
+/*
+INSERT INTO Users ("name", "username", "password") VALUES ("um", "user1", "pass1");
+INSERT INTO Users ("name", "username", "password") VALUES ("dois", "user2", "pass2");
+INSERT INTO Users ("name", "username", "password") VALUES ("tres", "user3", "pass3");
+
+INSERT INTO Diginotes ("userId") VALUES (1);
+INSERT INTO Diginotes ("userId") VALUES (1);
+INSERT INTO Diginotes ("userId") VALUES (3);
+
+INSERT INTO Quote ("value") VALUES (1.0);
+INSERT INTO Quote ("value") VALUES (0.87);
+*/

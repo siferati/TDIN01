@@ -32,7 +32,7 @@ namespace Client.Cli
         public void Launch(Client client)
         {
             // initial menu
-            menu = new MainMenu(client);
+            menu = new InitialMenu(client);
 
             while (menu != null)
             {

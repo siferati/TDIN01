@@ -4,131 +4,131 @@ using System.IO;
 
 namespace Server
 {
-    class DB
+    /// <summary>
+    /// Represents a database.
+    /// </summary>
+    class DB : IDisposable
     {
-        private static SQLiteConnection conn;
-        private static SQLiteCommand com;
-        private static SQLiteTransaction trans;
-        private static SQLiteDataReader reader;
+        /* --- ATTRIBUTES --- */
 
-        public const string DB_PATH = "../../db/db.sqlite";
-        public const string SQL_PATH = "../../db/db.sql";
+        /// <summary>
+        /// Connection to the database.
+        /// </summary>
+        private SQLiteConnection connection;
+
+        /// <summary>
+        /// Path to the database creation script (.sql).
+        /// </summary>
+        private string inpath;
+
+        /// <summary>
+        /// Path to the database file (.sqlite).
+        /// </summary>
+        private string outpath;
 
 
-        public static void Init(bool overwrite = false)
+        /* --- METHODS --- */
+
+        /// <summary>
+        /// Returns an instance of DB.
+        /// </summary>
+        /// <param name="inpath">Path to the database creation script (.sql).</param>
+        /// <param name="outpath">Path to the database file (.sqlite).</param>
+        public DB(string inpath, string outpath)
         {
+            this.inpath = inpath;
+            this.outpath = outpath;
 
-            if (!File.Exists(DB_PATH))
+            // true if database didn't exist yet
+            bool newDB = false;
+
+            if (!File.Exists(outpath))
             {
-                SQLiteConnection.CreateFile(DB_PATH);
-                overwrite = true;
-            }
+                // create database file
+                SQLiteConnection.CreateFile(outpath);
 
-            else if (overwrite)
+                newDB = true;
+            }            
+
+            // create and open connection to database
+            connection = new SQLiteConnection("Data Source=" + outpath + ";Version=3;foreign keys=true;");
+            connection.Open();
+
+            if (newDB)
             {
-                File.Delete(DB_PATH);
-            }
+                // fetch creation script from inpath (.sql)
+                string sql = File.ReadAllText(inpath);
 
-            /* created db connection*/
-            conn = new SQLiteConnection("Data Source=" + DB_PATH + ";Version=3;foreign keys=true;");
-            conn.Open();
-
-            /* creates sql command for future use */
-            com = new SQLiteCommand(conn);
-
-            /* if new db was created */
-            if (overwrite)
-            {
-                /* reads sql script */
-                com.CommandText = File.ReadAllText(SQL_PATH);
-
-                /* executes sql script */
-                try
-                {
-                    trans = conn.BeginTransaction();
-                    com.ExecuteNonQuery();
-                    trans.Commit();
-                }
-                catch (SQLiteException e)
-                {
-                    trans.Rollback();
-                    Console.WriteLine(e.StackTrace);
-                }
-            }
-
-        }
-
-        public static bool InsertUser(string UserName, string NickName, string Password)
-        {
-
-
-
-            com.CommandText = "INSERT INTO User(  username, nickname, password, balance) VALUES (  @user, @nick, @pass, @balance)";
-
-            com.Parameters.Add(new SQLiteParameter("@user", UserName));
-            com.Parameters.Add(new SQLiteParameter("@nick", NickName));
-            com.Parameters.Add(new SQLiteParameter("@pass", Password));
-            com.Parameters.Add(new SQLiteParameter("@balance", 0.0));
-
-
-            try
-            {
-                trans = conn.BeginTransaction();
-                int rows = com.ExecuteNonQuery();
-                trans.Commit();
-                if (rows > 0)
-                    return true;
-                return false;
-
-            }
-            catch (SQLiteException e)
-            {
-                trans.Rollback();
-                Console.WriteLine(e.StackTrace);
-            }
-
-            return false;
-
+                // initialize database
+                SQLiteCommand cmd = new SQLiteCommand(sql, connection);
+                cmd.ExecuteNonQuery();
+            }           
         }
 
 
-        public static bool Login(string Nick, string Password)
+        /// <summary>
+        /// Free resources once object is no longer needed.
+        /// </summary>
+        public void Dispose()
         {
-            com.CommandText = "SELECT * FROM User WHERE nickname = @user AND password = @pass";
-            com.Parameters.Add(new SQLiteParameter("@user", Nick));
-            com.Parameters.Add(new SQLiteParameter("@pass", Password));
+            connection.Dispose();
+        }
 
+
+        /// <summary>
+        /// Insert a new user in the database.
+        /// </summary>
+        /// <param name="name">Name of the user.</param>
+        /// <param name="username">Username.</param>
+        /// <param name="password">Password.</param>
+        /// <returns>TRUE if the insert was successful, FALSE otherwise.</returns>
+        public bool InsertUser(string name, string username, string password)
+        {
+            string sql = @"
+                INSERT INTO Users (name, username, password)
+                VALUES (@name, @username, @password)
+            ";
+
+            SQLiteCommand cmd = new SQLiteCommand(sql, connection);
+
+            cmd.Parameters.AddWithValue("@name", name);
+            cmd.Parameters.AddWithValue("@username", username);
+            cmd.Parameters.AddWithValue("@password", password);
 
             try
             {
-                reader = com.ExecuteReader();
-            }
-            catch (SQLiteException e)
-            {
-                Console.WriteLine(e.StackTrace);
-                return false;
-            }
-
-
-            if (reader.Read())
-            {
-                reader.Close();
+                cmd.ExecuteNonQuery();
                 return true;
             }
-            reader.Close();
-            return false;
-
+            catch (SQLiteException)
+            {
+                return false;
+            }
         }
 
 
-        public static void Logout()
+        /// <summary>
+        /// Checks if the given username and password match.
+        /// </summary>
+        /// <param name="username">Username.</param>
+        /// <param name="password">Password.</param>
+        /// <returns>TRUE if username and password match, FALSE otherwise.</returns>
+        public bool CheckCredentials(string username, string password)
         {
+            string sql = @"
+                SELECT id FROM Users
+                WHERE username = @username
+                AND password = @password
+            ";
 
-        }
+            SQLiteCommand cmd = new SQLiteCommand(sql, connection);
 
-        public static void RegisterUser()
-        {
+            cmd.Parameters.AddWithValue("@username", username);
+            cmd.Parameters.AddWithValue("@password", password);
 
+            SQLiteDataReader reader = cmd.ExecuteReader();
+
+            return reader.HasRows;
         }
     }
 }

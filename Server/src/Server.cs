@@ -1,5 +1,6 @@
 ﻿using Common;
 using System;
+using System.IO;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
@@ -20,7 +21,6 @@ namespace Server
         {
 
             Console.WriteLine("Starting...");
-            DB.Init();
 
             // register the channel
             TcpChannel ch = new TcpChannel(9000);
@@ -40,6 +40,21 @@ namespace Server
 
         /* --- ATTRIBUTES --- */
 
+        /// <summary>
+        /// Path to the database creation script (.sql).
+        /// </summary>
+        public const string DB_INPATH = "../../db/db.sql";
+
+        /// <summary>
+        /// Path of the database file (.sqlite).
+        /// </summary>
+        public const string DB_OUTPATH = "../../db/db.sqlite";
+
+        /// <summary>
+        /// The database.
+        /// </summary>
+        private DB db;
+
 
         /* --- METHODS --- */
 
@@ -48,40 +63,20 @@ namespace Server
         /// </summary>
         public Server()
         {
-
             Log("Waking up...");
+
+            // init database
+            db = new DB(DB_INPATH, DB_OUTPATH);
         }
 
 
         /// <summary>
-        /// Clean up once the object is about to be destroyed
+        /// Free resources once object is about to be destroyed.
         /// </summary>
         ~Server()
         {
             Log("Shutting off...");
-        }
-
-
-        /// <summary>
-        /// Logs the user into the system.
-        /// </summary>
-        /// <param name="username">Username.</param>
-        /// <param name="password">Password.</param>
-        /// <returns>TRUE if username and passsword match, FALSE otherwise.</returns>
-        public bool Login(string username, string password)
-        {
-            Log("Client is trying to login...");
-
-            if (DB.Login(username, password))
-            {
-                Log("Password and username match. User allowed to login.");
-                return true;
-            }
-            else
-            {
-                Log("Password and username don't match. User not allowed to login.");
-                return false;
-            }
+            db.Dispose();
         }
 
 
@@ -96,14 +91,37 @@ namespace Server
         {
             Log("Client is trying to register a new user...");
 
-            if (DB.InsertUser(name, username, password))
+            if (db.InsertUser(name, username, password))
             {
                 Log("New user created.");
                 return true;
             }
             else
             {
-                Log("User already exists.");
+                Log("Failed to create new user: username already exists.");
+                return false;
+            }
+        }
+
+
+        /// <summary>
+        /// Logs the user into the system.
+        /// </summary>
+        /// <param name="username">Username.</param>
+        /// <param name="password">Password.</param>
+        /// <returns>TRUE if username and passsword match, FALSE otherwise.</returns>
+        public bool Login(string username, string password)
+        {
+            Log("Client is trying to login...");
+
+            if (db.CheckCredentials(username, password))
+            {
+                Log("Login successful.");
+                return true;
+            }
+            else
+            {
+                Log("Failed to login: username and password don't match.");
                 return false;
             }
         }

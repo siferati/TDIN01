@@ -10,24 +10,19 @@ namespace Client.Cli
         /* --- ATTRIBUTES --- */
 
         /// <summary>
-        /// Index of login menu entry.
+        /// Index of logout menu entry.
         /// </summary>
-        public const int LOGIN = 0;
-
-        /// <summary>
-        /// Index of register menu entry.
-        /// </summary>
-        public const int REGISTER = 1;
+        public const int LOGOUT = 0;
 
         /// <summary>
         /// Index of exit menu entry.
         /// </summary>
-        public const int EXIT = 2;
+        public const int EXIT = 1;
 
 
         /* --- METHODS --- */
 
-        public MainMenu(Client client) : base(client, "Main Menu", new string[] { "Login", "Register", "Exit" })
+        public MainMenu(Client client) : base(client, "Main Menu", new string[] { "Logout", "Exit" })
         {
 
         }
@@ -40,42 +35,15 @@ namespace Client.Cli
             {
                 switch (--i)
                 {
-                    case LOGIN:
+                    case LOGOUT:
                         {
 
-                            Console.Write("Username: ");
-                            string username = Console.ReadLine();
-                            Console.Write("Password: ");
-                            string password = Console.ReadLine();
-
-                            // login
-                            client.Login(username, password);
-
-                            // TODO return next menu
-                            break;
+                            Console.Write("Logged out.");
+                            return new InitialMenu(client);
                         }
-
-                    case REGISTER:
-                        {
-
-                            Console.Write("Name: ");
-                            string name = Console.ReadLine();
-                            Console.Write("Username: ");
-                            string username = Console.ReadLine();
-                            Console.Write("Password: ");
-                            string password = Console.ReadLine();
-
-                            // register
-                            client.Register(name, username, password);
-
-                            // TODO return next menu
-
-                            break;
-
-                        }
+                        
                     case EXIT:
                         {
-
                             return null;
                         }
 

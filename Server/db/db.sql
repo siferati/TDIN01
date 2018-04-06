@@ -1,0 +1,17 @@
+DROP TABLE IF EXISTS User;
+CREATE TABLE User (
+	userId INTEGER PRIMARY KEY,
+	username TEXT  NOT NULL UNIQUE,
+	nickname TEXT  NOT NULL,
+	password TEXT  NOT NULL,
+	balance INTEGER
+	
+);
+
+DROP TABLE IF EXISTS Diginote;
+CREATE TABLE Diginote (
+	id INTEGER PRIMARY KEY,
+	userId INTEGER NOT NULL,
+	FOREIGN KEY (userId) REFERENCES User(userId)
+);
+

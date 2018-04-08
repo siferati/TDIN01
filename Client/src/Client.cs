@@ -1,5 +1,6 @@
 ﻿using Client.Cli;
 using Common;
+using Newtonsoft.Json;
 using System;
 using System.Runtime.Remoting;
 
@@ -34,6 +35,11 @@ namespace Client
         /// </summary>
         private IServer server;
 
+        /// <summary>
+        /// The user that's currently logged into the system.
+        /// </summary>
+        public User User { get; set; }
+
 
         /* --- METHODS --- */
 
@@ -42,10 +48,20 @@ namespace Client
         /// </summary>
         public Client()
         {
+            User = null;
 
             Log("Creating server proxy...");
             server = (IServer)RemotingServices.Connect(typeof(IServer), "tcp://localhost:9000/Server.rem");
             Log("Server proxy created.");
+        }
+
+
+        /// <summary>
+        /// Clean up once the object is about to be destroyed
+        /// </summary>
+        ~Client()
+        {
+            Log("Shutting off...");
         }
 
 
@@ -59,7 +75,9 @@ namespace Client
         {
             Log("Attempting to login...");
 
-            if (server.Login(username, password))
+            User = JsonConvert.DeserializeObject<User>(server.Login(username, password));
+
+            if (User != null)
             {
                 Log("Login successful!");
                 return true;
@@ -69,6 +87,16 @@ namespace Client
                 Log("Failted to login!");
                 return false;
             }
+        }
+
+
+        /// <summary>
+        /// Logs the user out of the system.
+        /// </summary>
+        public void Logout()
+        {
+            Log("Attempting to logout...");
+            User = null;
         }
 
 
@@ -97,11 +125,12 @@ namespace Client
 
 
         /// <summary>
-        /// Clean up once the object is about to be destroyed
+        /// Get the current quote of diginotes.
         /// </summary>
-        ~Client()
+        /// <returns>The current quote.</returns>
+        public double GetQuote()
         {
-            Log("Shutting off...");
+            return server.Quote;
         }
 
 

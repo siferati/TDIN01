@@ -38,6 +38,7 @@ namespace Client.Cli
             {
                 Console.Write(menu);
                 string input = Console.ReadLine();
+                Console.Clear();
                 menu = menu.ProcessInput(input);
             }
         }

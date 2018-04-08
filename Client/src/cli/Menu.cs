@@ -50,7 +50,16 @@ namespace Client.Cli
 
         public override string ToString()
         {
-            String str = "\n----------";
+            String str = "----------";
+            
+            if (client.User != null)
+            {
+                str += "\nName: " + client.User.Name + "\n";
+                str += "Wallet: " + client.User.Wallet.Count + " Diginotes\n";
+                str += "Quote: " + client.GetQuote() + "\n";
+                str += "----------";
+            }
+
             str += "\n" + title + "\n\n";
             for (int i = 0; i < options.Length; i++)
             {

@@ -1,6 +1,6 @@
 ﻿using Common;
+using Newtonsoft.Json;
 using System;
-using System.IO;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
@@ -55,6 +55,11 @@ namespace Server
         /// </summary>
         private DB db;
 
+        /// <summary>
+        /// The current quote of diginotes.
+        /// </summary>
+        public double Quote { get; }
+
 
         /* --- METHODS --- */
 
@@ -67,6 +72,8 @@ namespace Server
 
             // init database
             db = new DB(DB_INPATH, DB_OUTPATH);
+
+            Quote = db.GetQuote();
         }
 
 
@@ -110,20 +117,22 @@ namespace Server
         /// <param name="username">Username.</param>
         /// <param name="password">Password.</param>
         /// <returns>TRUE if username and passsword match, FALSE otherwise.</returns>
-        public bool Login(string username, string password)
+        public string Login(string username, string password)
         {
             Log("Client is trying to login...");
 
-            if (db.CheckCredentials(username, password))
+            User user = db.GetUser(username, password);
+
+            if (user != null)
             {
                 Log("Login successful.");
-                return true;
             }
             else
             {
                 Log("Failed to login: username and password don't match.");
-                return false;
             }
+
+            return JsonConvert.SerializeObject(user);
         }
 
 

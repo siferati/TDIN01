@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Common;
+using System;
+using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
 
@@ -112,11 +114,11 @@ namespace Server
         /// </summary>
         /// <param name="username">Username.</param>
         /// <param name="password">Password.</param>
-        /// <returns>TRUE if username and password match, FALSE otherwise.</returns>
-        public bool CheckCredentials(string username, string password)
+        /// <returns>User if login was successful, null otherwise.</returns>
+        public User GetUser(string username, string password)
         {
             string sql = @"
-                SELECT id FROM Users
+                SELECT id, name, username FROM Users
                 WHERE username = @username
                 AND password = @password
             ";
@@ -128,7 +130,64 @@ namespace Server
 
             SQLiteDataReader reader = cmd.ExecuteReader();
 
-            return reader.HasRows;
+            User user = null;
+
+            if (reader.Read())
+            {
+                user =  new User(
+                    (long) reader["id"],
+                    (string) reader["name"],
+                    (string) reader["username"],
+                    new List<Diginote>()
+                );
+
+                sql = @"
+                    SELECT id
+                    FROM Diginotes
+                    WHERE Diginotes.userId = @userId
+                ";
+
+                cmd = new SQLiteCommand(sql, connection);
+
+                cmd.Parameters.AddWithValue("@userId", user.Id);
+
+                reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    user.Wallet.Add(new Diginote((long) reader["id"]));
+                }
+            }
+
+            return user;
+        }
+
+
+        /// <summary>
+        /// Get current quote for diginotes.
+        /// </summary>
+        /// <returns>Current quote.</returns>
+        public double GetQuote()
+        {
+            string sql = @"
+                SELECT value
+                FROM Quote
+                ORDER BY timestamp DESC
+                LIMIT 1
+            ";
+
+            SQLiteCommand cmd = new SQLiteCommand(sql, connection);
+
+            SQLiteDataReader reader = cmd.ExecuteReader();
+
+            if (reader.Read())
+            {
+                return (double) reader["value"];
+            }
+            else
+            {
+                return 0;
+            }
         }
     }
 }

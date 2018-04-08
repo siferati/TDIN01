@@ -37,8 +37,7 @@ namespace Client.Cli
                 {
                     case LOGOUT:
                         {
-
-                            Console.Write("Logged out.");
+                            client.Logout();
                             return new InitialMenu(client);
                         }
                         

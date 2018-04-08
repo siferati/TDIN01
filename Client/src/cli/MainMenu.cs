@@ -15,14 +15,20 @@ namespace Client.Cli
         public const int LOGOUT = 0;
 
         /// <summary>
+        /// Index of emit selling order menu entry.
+        /// </summary>
+        public const int SELLING_ORDER = 1;
+
+        /// <summary>
         /// Index of exit menu entry.
         /// </summary>
-        public const int EXIT = 1;
+        public const int EXIT = 2;
 
 
         /* --- METHODS --- */
 
-        public MainMenu(Client client) : base(client, "Main Menu", new string[] { "Logout", "Exit" })
+        public MainMenu(Client client) : base(client, "Main Menu",
+            new string[] {"Logout", "Emit Selling Order", "Exit" })
         {
 
         }
@@ -40,7 +46,16 @@ namespace Client.Cli
                             client.Logout();
                             return new InitialMenu(client);
                         }
-                        
+
+                    case SELLING_ORDER:
+                        {
+                            Console.Write("Amount: ");
+                            long amount = Convert.ToInt64(Console.ReadLine());
+
+                            // TODO Order = server.addOrder(User, amount)
+                            return this;
+                        }
+
                     case EXIT:
                         {
                             return null;

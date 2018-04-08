@@ -14,14 +14,34 @@ CREATE TABLE Users (
 
 CREATE TABLE Diginotes (
 	id INTEGER PRIMARY KEY,
-	userId INTEGER NOT NULL,
-	FOREIGN KEY (userId) REFERENCES Users(id)
+	userId INTEGER NOT NULL REFERENCES Users(id)
 );
 
 CREATE Table Quote (
 	id INTEGER PRIMARY KEY,
 	timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
 	value REAL NOT NULL
+);
+
+CREATE Table SellingOrders (
+	id INTEGER PRIMARY KEY,
+	timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+	userId INTEGER NOT NULL REFERENCES Users(id),
+	amount INTEGER NOT NULL
+);
+
+CREATE Table PurchaseOrders (
+	id INTEGER PRIMARY KEY,
+	timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+	userId INTEGER NOT NULL REFERENCES Users(id),
+	amount INTEGER NOT NULL
+);
+
+CREATE Table CompletedOrders (
+	sellingOrderId INTEGER REFERENCES SellingOrders(id),
+	purchaseOrderId INTEGER REFERENCES PurchaseOrders(id),
+	timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (sellingOrderId, purchaseOrderId)
 );
 
 /* Test data */

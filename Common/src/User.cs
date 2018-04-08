@@ -29,6 +29,15 @@ namespace Common
         /// </summary>
         public List<Diginote> Wallet { get; }
 
+        /// <summary>
+        /// List of selling orders emitted by this user.
+        /// </summary>
+        public List<Order> SellingOrders { get; set; }
+
+        /// <summary>
+        /// List of purchase orders emitted by this user.
+        /// </summary>
+        public List<Order> PurchaseOrsers { get; set; }
 
         /* --- METHODS --- */
 
@@ -45,6 +54,8 @@ namespace Common
             this.Name = name;
             this.Username = username;
             this.Wallet = wallet;
+            SellingOrders = new List<Order>();
+            PurchaseOrsers = new List<Order>();
         }
     }
 }

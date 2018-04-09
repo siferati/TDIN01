@@ -4,6 +4,8 @@ using System;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Server
 {
@@ -88,6 +90,28 @@ namespace Server
 
 
         /// <summary>
+        /// Hashes the given password through sha256.
+        /// </summary>
+        /// <param name="password">Password to hash.</param>
+        /// <returns>The hashed password.</returns>
+        private string HashPassword(string password)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            using (SHA256 hash = SHA256Managed.Create())
+            {
+                Encoding enc = Encoding.UTF8;
+                Byte[] result = hash.ComputeHash(enc.GetBytes(password));
+
+                foreach (Byte b in result)
+                    sb.Append(b.ToString("x2"));
+            }
+
+            return sb.ToString();
+        }
+
+
+        /// <summary>
         /// Registers a new user into the system.
         /// </summary>
         /// <param name="name">Name of the user.</param>
@@ -98,7 +122,7 @@ namespace Server
         {
             Log("Client is trying to register a new user...");
 
-            if (db.InsertUser(name, username, password))
+            if (db.InsertUser(name, username, HashPassword(password)))
             {
                 Log("New user created.");
                 return true;
@@ -121,7 +145,7 @@ namespace Server
         {
             Log("Client is trying to login...");
 
-            User user = db.GetUser(username, password);
+            User user = db.GetUser(username, HashPassword(password));
 
             if (user != null)
             {

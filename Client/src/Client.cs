@@ -23,14 +23,19 @@ namespace Client
             // start client
             Client client = new Client();
 
-            // start interface
-            /*CLI cli = new CLI();
-            cli.Launch(client);*/
-
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1(client));
-
+            if (args.Length == 1 && args[0] == "-nogui")
+            {
+                // start cli
+                CLI cli = new CLI();
+                cli.Launch(client);
+            }
+            else
+            {
+                //start gui
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                Application.Run(new Form1(client));
+            }
         }
 
 

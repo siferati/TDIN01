@@ -50,6 +50,9 @@ namespace Client.Cli
 
         public override string ToString()
         {
+            // update wallet
+            client.UpdateUser();
+
             String str = "----------";
             
             if (client.User != null)

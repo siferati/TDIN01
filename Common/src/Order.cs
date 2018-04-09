@@ -51,5 +51,24 @@ namespace Common
             this.Timestamp = timestamp;
             this.Amount = amount;
         }
+
+
+        public override string ToString()
+        {
+            string str = "";
+
+            if (Type == OrderType.Purchase)
+            {
+                str += "Purchase Order";
+            }
+            else if (Type == OrderType.Selling)
+            {
+                str += "Selling Order";
+            }
+
+            str += " #" + Id + " Goal Amount: " + Amount;
+
+            return str;
+        }
     }
 }

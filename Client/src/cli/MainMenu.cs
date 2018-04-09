@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Common;
+using System;
+using System.Collections.Generic;
+using static Common.Order;
 
 namespace Client.Cli
 {
@@ -20,15 +23,25 @@ namespace Client.Cli
         public const int SELLING_ORDER = 1;
 
         /// <summary>
+        /// Index of emit purchase order menu entry.
+        /// </summary>
+        public const int PURCHASE_ORDER = 2;
+
+        /// <summary>
+        /// Index of list pending orders menu entry.
+        /// </summary>
+        public const int PENDING_ORDERS = 3;
+
+        /// <summary>
         /// Index of exit menu entry.
         /// </summary>
-        public const int EXIT = 2;
+        public const int EXIT = 4;
 
 
         /* --- METHODS --- */
 
         public MainMenu(Client client) : base(client, "Main Menu",
-            new string[] {"Logout", "Emit Selling Order", "Exit" })
+            new string[] {"Logout", "Emit Selling Order", "Emit Purchase Order", "List Pending Orders", "Exit" })
         {
 
         }
@@ -51,9 +64,33 @@ namespace Client.Cli
                         {
                             Console.Write("Amount: ");
                             long amount = Convert.ToInt64(Console.ReadLine());
+                            client.AddOrder(OrderType.Selling, amount);
 
-                            // TODO Order = server.addOrder(User, amount)
-                            return this;
+                            break;
+                        }
+
+                    case PURCHASE_ORDER:
+                        {
+                            Console.Write("Amount: ");
+                            long amount = Convert.ToInt64(Console.ReadLine());
+                            client.AddOrder(OrderType.Purchase, amount);
+
+                            break;
+                        }
+
+                    case PENDING_ORDERS:
+                        {
+                            List<Order> orders = client.GetPendingOrders();
+
+                            Console.WriteLine("\n----------");
+                            Console.WriteLine("Pending Orders");
+                            foreach (Order order in orders)
+                            {
+                                Console.WriteLine(order);
+                            }
+                            Console.WriteLine("----------");
+
+                            break;
                         }
 
                     case EXIT:
@@ -68,7 +105,7 @@ namespace Client.Cli
                 }
             }
 
-            // invalid input
+            // same menu (prob invalid input)
             return this;
         }
     }

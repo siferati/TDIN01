@@ -2,8 +2,10 @@
 using Common;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Runtime.Remoting;
 using System.Windows.Forms;
+using static Common.Order;
 
 namespace Client
 {
@@ -100,6 +102,48 @@ namespace Client
             }
         }
 
+        /// <summary>
+        /// Updates the user.
+        /// </summary>
+        public void UpdateUser()
+        {
+            User.Wallet = JsonConvert.DeserializeObject<List<Diginote>>(server.GetWallet(User.Id));
+        }
+
+
+        /// <summary>
+        /// Adds a new order.
+        /// </summary>
+        /// <param name="type">Type of order to add (buying or selling).</param>
+        /// <param name="amount">Amount of diginotes to buy / sell.</param>
+        /// <returns>TRUE if the order was added, FALSE otherwise.</returns>
+        public bool AddOrder(OrderType type, long amount)
+        {
+            Log("Attempting to emit a new order...");
+
+            UpdateUser();
+            if (User.Wallet.Count < amount)
+            {
+                Log("Emition failed: not enough diginotes to proceed with sale.");
+                return false;
+            }
+            
+            Order order = JsonConvert.DeserializeObject<Order>(
+                server.AddOrder(type, User.Id, amount)
+            );
+
+            if (order != null)
+            {
+                Log("Emition successful!");
+                return true;
+            }
+            else
+            {
+                Log("Failted to emit new order!");
+                return false;
+            }
+        }
+
 
         /// <summary>
         /// Logs the user out of the system.
@@ -142,6 +186,31 @@ namespace Client
         public double GetQuote()
         {
             return server.Quote;
+        }
+
+
+        /// <summary>
+        /// Returns the list of pending orders.
+        /// </summary>
+        /// <returns>List of pending orders.</returns>
+        public List<Order> GetPendingOrders()
+        {
+            Log("Attempting to fetch pending orders...");
+
+            List<Order> orders = JsonConvert.DeserializeObject<List<Order>>(
+                server.GetPendingOrders(User.Id)
+            );
+
+            if (orders != null)
+            {
+                Log("Retrieval of pending orders was successful!");
+            }
+            else
+            {
+                Log("Failted to retrieve list of pending orders!");
+            }
+
+            return orders;
         }
 
 

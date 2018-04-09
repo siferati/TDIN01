@@ -41,6 +41,7 @@ CREATE Table CompletedOrders (
 	sellingOrderId INTEGER REFERENCES SellingOrders(id),
 	purchaseOrderId INTEGER REFERENCES PurchaseOrders(id),
 	timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+	amount INTEGER NOT NULL,
 	PRIMARY KEY (sellingOrderId, purchaseOrderId)
 );
 
@@ -50,15 +51,3 @@ INSERT INTO Users ("name", "username", "password") VALUES ("Teste", "user", "d74
 INSERT INTO Diginotes ("userId") VALUES (1);
 INSERT INTO Diginotes ("userId") VALUES (1);
 INSERT INTO Diginotes ("userId") VALUES (1);
-
-/*
-INSERT INTO Users ("name", "username", "password") VALUES ("um", "user1", "pass1");
-INSERT INTO Users ("name", "username", "password") VALUES ("dois", "user2", "pass2");
-INSERT INTO Users ("name", "username", "password") VALUES ("tres", "user3", "pass3");
-
-INSERT INTO Diginotes ("userId") VALUES (2);
-INSERT INTO Diginotes ("userId") VALUES (2);
-INSERT INTO Diginotes ("userId") VALUES (3);
-
-INSERT INTO Quote ("value") VALUES (0.87);
-*/

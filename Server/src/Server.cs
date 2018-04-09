@@ -1,11 +1,13 @@
 ﻿using Common;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Security.Cryptography;
 using System.Text;
+using static Common.Order;
 
 namespace Server
 {
@@ -140,7 +142,7 @@ namespace Server
         /// </summary>
         /// <param name="username">Username.</param>
         /// <param name="password">Password.</param>
-        /// <returns>TRUE if username and passsword match, FALSE otherwise.</returns>
+        /// <returns>Serialized user that logged in.</returns>
         public string Login(string username, string password)
         {
             Log("Client is trying to login...");
@@ -157,6 +159,80 @@ namespace Server
             }
 
             return JsonConvert.SerializeObject(user);
+        }
+
+
+        /// <summary>
+        /// Get user's wallet.
+        /// </summary>
+        /// <param name="userId">User id.</param>
+        /// <returns>Serialized user wallet.</returns>
+        public string GetWallet(long userId)
+        {
+            Log("Client is trying to get user wallet...");
+
+            List<Diginote> wallet = db.GetWallet(userId);
+
+            if (wallet != null)
+            {
+                Log("Success.");
+            }
+            else
+            {
+                Log("Failed.");
+            }
+
+            return JsonConvert.SerializeObject(wallet);
+        }
+
+
+        /// <summary>
+        /// Adds a new order to the given user.
+        /// </summary>
+        /// <param name="type">Type of order to add (buying or selling).</param>
+        /// <param name="user">User id.</param>
+        /// <param name="amount">Amount of diginotes to buy / sell.</param>
+        /// <returns>Serialized order that was added.</returns>
+        public string AddOrder(OrderType type, long userId, long amount)
+        {
+            Log("Client is trying to emit new order...");
+
+            Order order = db.InsertOrder(type, userId, amount);
+            
+            if (order != null)
+            {
+                Log("Order was emited successfully.");
+            }
+            else
+            {
+                Log("Failed to emit order.");
+            }
+
+            return JsonConvert.SerializeObject(order);
+        }
+
+
+        /// <summary>
+        /// Returns the list of pending orders for given user.
+        /// </summary>
+        /// <param name="userId">User id.</param>
+        /// <returns>List of pending orders.</returns>
+        public string GetPendingOrders(long userId)
+        {
+            Log("Client is trying to get pending orders...");
+
+            List<Order> orders = db.GetPendingOrders(userId);
+
+            if (orders != null)
+            {
+                Log("Pending orders were retreived successfully.");
+            }
+            else
+            {
+                Log("Failed to retrieve pending orders.");
+            }
+
+            return JsonConvert.SerializeObject(orders);
         }
 
 

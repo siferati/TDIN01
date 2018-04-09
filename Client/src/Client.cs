@@ -3,13 +3,14 @@ using Common;
 using Newtonsoft.Json;
 using System;
 using System.Runtime.Remoting;
+using System.Windows.Forms;
 
 namespace Client
 {
     /// <summary>
     /// Represents a client.
     /// </summary>
-    class Client
+    public class Client
     {
         /// <summary>
         /// Client entry point.
@@ -23,8 +24,13 @@ namespace Client
             Client client = new Client();
 
             // start interface
-            CLI cli = new CLI();
-            cli.Launch(client);
+            /*CLI cli = new CLI();
+            cli.Launch(client);*/
+
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new Form1(client));
+
         }
 
 

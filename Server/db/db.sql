@@ -48,7 +48,18 @@ CREATE Table CompletedOrders (
 
 /* Test data */
 INSERT INTO Quote ("value") VALUES (1.0);
-INSERT INTO Users ("name", "username", "password") VALUES ("Teste", "user", "d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1");
+INSERT INTO Users ("money", "name", "username", "password") VALUES (100, "Teste", "user", "d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1");
 INSERT INTO Diginotes ("userId") VALUES (1);
 INSERT INTO Diginotes ("userId") VALUES (1);
 INSERT INTO Diginotes ("userId") VALUES (1);
+INSERT INTO Diginotes ("userId") VALUES (1);
+INSERT INTO Diginotes ("userId") VALUES (1);
+INSERT INTO Diginotes ("userId") VALUES (1);
+
+
+INSERT INTO Users ("money", "name", "username", "password") VALUES (200, "Um", "user1", "e6c3da5b206634d7f3f3586d747ffdb36b5c675757b380c6a5fe5c570c714349");
+INSERT INTO Diginotes ("userId") VALUES (2);
+INSERT INTO Diginotes ("userId") VALUES (2);
+INSERT INTO Diginotes ("userId") VALUES (2);
+
+INSERT INTO PurchaseOrders ("userId", "amount") VALUES (2, 2);

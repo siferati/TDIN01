@@ -105,7 +105,7 @@ namespace Server
             }
             catch (SQLiteException e)
             {
-                Console.WriteLine(e.StackTrace);
+                Console.WriteLine(e);
                 return false;
             }
         }
@@ -260,8 +260,8 @@ namespace Server
         /// <param name="type">Type of order to insert (buying or selling).</param>
         /// <param name="userId">Id of user whom order belongs to.</param>
         /// <param name="amount">Amount of diginotes to buy / sell.</param>
-        /// <returns>The order that was insert.</returns>
-        public Order InsertOrder(OrderType type, long userId, long amount)
+        /// <returns>This operation status.</returns>
+        public Info InsertOrder(OrderType type, long userId, long amount)
         {
             string table = "";
 
@@ -281,8 +281,6 @@ namespace Server
 
             SQLiteCommand cmd = new SQLiteCommand(sql, connection);
 
-            
-            
             cmd.Parameters.AddWithValue("@userId", userId);
             cmd.Parameters.AddWithValue("@amount", amount);
 
@@ -306,20 +304,152 @@ namespace Server
                 cmd.Parameters.AddWithValue("@amount", amount);
 
                 SQLiteDataReader reader = cmd.ExecuteReader();
-
-                Order order = null;
+                
                 if (reader.Read())
                 {
-                    order = GetOrder(type, (long)reader["id"]);
+                    Order order = GetOrder(type, (long)reader["id"]);
+
+                    // get all pending orders
+                    List<Order> pendingOrders = GetPendingOrders();
+
+                    // true if order was parcially completed
+                    bool parcial = false;
+                    foreach (Order pendingOrder in pendingOrders)
+                    {
+                        // ignore orders of same type or same owner
+                        if (type == pendingOrder.Type || userId == pendingOrder.UserId)
+                        {
+                            continue;
+                        }
+
+                        // pending order has enough to satisfy order
+                        if (amount <= (pendingOrder.Amount - pendingOrder.CurrentAmount))
+                        {
+                            // insert completed order
+                            InsertCompletedOrder(order, pendingOrder, amount);
+
+                            return Info.OrderCompleted;
+                        }
+                        // one pending order isn't enough
+                        else
+                        {
+                            InsertCompletedOrder(order, pendingOrder, (pendingOrder.Amount - pendingOrder.CurrentAmount));
+
+                            // update order amount
+                            order.Amount -= pendingOrder.Amount;
+                            parcial = true;
+                        }
+                    }
+
+                    if (parcial)
+                    {
+                        return Info.OrderParciallyCompleted;
+                    }
+                    else
+                    {
+                        return Info.OrderPending;
+                    }
                 }
 
-                return order;
+                return Info.Failed;
 
             }
             catch (SQLiteException e)
             {
-                Console.WriteLine(e.StackTrace);
-                return null;
+                Console.WriteLine(e);
+                return Info.Failed;
+            }
+        }
+
+
+        /// <summary>
+        /// Updates the amount of money the user has.
+        /// </summary>
+        /// <param name="userId">User id.</param>
+        /// <param name="amount">Amount to add / remove.</param>
+        /// <returns>TRUE if updat was successful, FALSE otherwise.</returns>
+        public bool UpdateUserMoney(long userId, double amount)
+        {
+            string sql = @"
+                UPDATE Users
+                SET money = money + @amount
+                WHERE id = @userId
+            ";
+
+            SQLiteCommand cmd = new SQLiteCommand(sql, connection);
+
+            cmd.Parameters.AddWithValue("@userId", userId);
+            cmd.Parameters.AddWithValue("@amount", amount);
+
+            try
+            {
+                return (cmd.ExecuteNonQuery() > 0);
+            }
+            catch (SQLiteException e)
+            {
+                Console.WriteLine(e);
+                return false;
+            }
+        }
+
+
+        /// <summary>
+        /// Inserts a completed order in the databse.
+        /// </summary>
+        /// <param name="order1">First order.</param>
+        /// <param name="order2">Second order.</param>
+        /// <param name="amount">Amount transactioned.</param>
+        /// <returns>TRUE if order was inserted, FALSE otherwise.</returns>
+        public bool InsertCompletedOrder(Order order1, Order order2, long amount)
+        {
+            string sql = @"
+                INSERT INTO CompletedOrders (sellingOrderId, purchaseOrderId, amount)
+                VALUES (@sellingId, @buyingId, @amount)
+            ";
+
+            SQLiteCommand cmd = new SQLiteCommand(sql, connection);
+
+            if (order1.Type == OrderType.Selling)
+            {
+                cmd.Parameters.AddWithValue("@sellingId", order1.Id);
+                cmd.Parameters.AddWithValue("@buyingId", order2.Id);
+            }
+            else if (order1.Type == OrderType.Purchase)
+            {
+                cmd.Parameters.AddWithValue("@sellingId", order2.Id);
+                cmd.Parameters.AddWithValue("@buyingId", order1.Id);
+            }
+            cmd.Parameters.AddWithValue("@amount", amount);
+
+            try
+            {
+                cmd.ExecuteNonQuery();
+
+                double quote = GetQuote();
+                double money = quote * amount;
+
+                // update users money
+                if (order1.Type == OrderType.Selling)
+                {
+                    UpdateUserMoney(order1.UserId, money);
+                    UpdateUserMoney(order2.UserId, -1 * money);
+                }
+                else if (order1.Type == OrderType.Purchase)
+                {
+                    UpdateUserMoney(order2.UserId, money);
+                    UpdateUserMoney(order1.UserId, -1 * money);
+                }
+
+
+                // TODO update user wallets here
+
+
+                return true;
+            }
+            catch (SQLiteException e)
+            {
+                Console.WriteLine(e);
+                return false;
             }
         }
 
@@ -343,7 +473,7 @@ namespace Server
             }
 
             string sql = @"
-                SELECT timestamp, amount
+                SELECT timestamp, amount, userId
                 FROM " + table + @"
                 WHERE id = @id
             ";
@@ -360,6 +490,7 @@ namespace Server
             {
                 order = new Order(
                     id,
+                    (long)reader["userId"],
                     type,
                     (DateTime) reader["timestamp"],
                     (long) reader["amount"]
@@ -373,13 +504,13 @@ namespace Server
         /// <summary>
         /// Returns a list of pending orders belonging to the given user.
         /// </summary>
-        /// <param name="userId"><User id./param>
+        /// <param name="userId">User id.</param>
         /// <returns>List of pending orders.</returns>
         public List<Order> GetPendingOrders(long userId)
         {
             // pending purchase orders
             string sql = @"
-                SELECT purchaseOrderId as pId, PurchaseOrders.amount AS goalAmount, SUM(CompletedOrders.amount) AS currentAmount, PurchaseOrders.timestamp
+                SELECT purchaseOrderId as pId, PurchaseOrders.amount AS goalAmount, SUM(CompletedOrders.amount) AS currentAmount, PurchaseOrders.timestamp, PurchaseOrders.userId
                 FROM PurchaseOrders, CompletedOrders, SellingOrders
                 WHERE PurchaseOrders.userId = @userId
                 AND PurchaseOrders.id = purchaseOrderId
@@ -387,13 +518,14 @@ namespace Server
                 GROUP BY pId
                 HAVING goalAmount > currentAmount
                 UNION
-                SELECT id AS pId, amount AS goalAmount, 0 AS currentAmount, timestamp
+                SELECT id AS pId, amount AS goalAmount, 0 AS currentAmount, timestamp, userId
                 FROM PurchaseOrders
                 WHERE NOT EXISTS (
 	                SELECT *
                     FROM CompletedOrders
                     WHERE PurchaseOrders.id = purchaseOrderId
                 )
+                AND userId = @userId
             ";
 
             SQLiteCommand cmd = new SQLiteCommand(sql, connection);
@@ -408,15 +540,17 @@ namespace Server
             {
                 orders.Add(new Order(
                     (long) reader["pId"],
+                    (long) reader["userId"],
                     OrderType.Purchase,
                     (DateTime) reader["timestamp"],
-                    (long) reader["goalAmount"]
+                    (long) reader["goalAmount"],
+                    (long)reader["currentAmount"]
                 ));
             }
 
             // pending selling orders
             sql = @"
-                SELECT sellingOrderId as sId, SellingOrders.amount AS goalAmount, SUM(CompletedOrders.amount) AS currentAmount, SellingOrders.timestamp
+                SELECT sellingOrderId as sId, SellingOrders.amount AS goalAmount, SUM(CompletedOrders.amount) AS currentAmount, SellingOrders.timestamp, SellingOrders.userId
                 FROM PurchaseOrders, CompletedOrders, SellingOrders
                 WHERE SellingOrders.userId = @userId
                 AND PurchaseOrders.id = purchaseOrderId
@@ -424,13 +558,14 @@ namespace Server
                 GROUP BY sId
                 HAVING goalAmount > currentAmount
                 UNION
-                SELECT id AS sId, amount AS goalAmount, 0 AS currentAmount, timestamp
+                SELECT id AS sId, amount AS goalAmount, 0 AS currentAmount, timestamp, userId
                 FROM SellingOrders
                 WHERE NOT EXISTS (
 	                SELECT *
                     FROM CompletedOrders
                     WHERE SellingOrders.id = sellingOrderId
                 )
+                AND userId = @userId
             ";
 
             cmd = new SQLiteCommand(sql, connection);
@@ -443,11 +578,41 @@ namespace Server
             {
                 orders.Add(new Order(
                     (long)reader["sId"],
+                    (long) reader["userId"],
                     OrderType.Selling,
                     (DateTime)reader["timestamp"],
-                    (long)reader["goalAmount"]
+                    (long)reader["goalAmount"],
+                    (long)reader["currentAmount"]
                 ));
             }
+
+            return orders;
+        }
+
+        /// <summary>
+        /// Returns an ordererd list of all pending orders of all users.
+        /// </summary>
+        /// <returns>List of pending orders.</returns>
+        public List<Order> GetPendingOrders()
+        {
+            string sql = @"
+                SELECT id
+                FROM Users
+            ";
+
+            SQLiteCommand cmd = new SQLiteCommand(sql, connection);
+
+            SQLiteDataReader reader = cmd.ExecuteReader();
+
+            List<Order> orders = new List<Order>();
+
+            while (reader.Read())
+            {
+                orders.AddRange(GetPendingOrders((long) reader["id"]));
+            }
+
+            // sort orders
+            orders.Sort((x, y) => x.Timestamp.CompareTo(y.Timestamp));
 
             return orders;
         }

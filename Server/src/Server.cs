@@ -169,18 +169,7 @@ namespace Server
         /// <returns>Serialized user wallet.</returns>
         public string GetWallet(long userId)
         {
-            Log("Client is trying to get user wallet...");
-
             List<Diginote> wallet = db.GetWallet(userId);
-
-            if (wallet != null)
-            {
-                Log("Success.");
-            }
-            else
-            {
-                Log("Failed.");
-            }
 
             return JsonConvert.SerializeObject(wallet);
         }
@@ -197,18 +186,18 @@ namespace Server
         {
             Log("Client is trying to emit new order...");
 
-            Order order = db.InsertOrder(type, userId, amount);
+            Info status = db.InsertOrder(type, userId, amount);
             
-            if (order != null)
-            {
-                Log("Order was emited successfully.");
-            }
-            else
+            if (status == Info.Failed)
             {
                 Log("Failed to emit order.");
             }
+            else
+            {
+                Log("Order was emited successfully. " + status);
+            }
 
-            return JsonConvert.SerializeObject(order);
+            return JsonConvert.SerializeObject(status);
         }
 
 
@@ -243,9 +232,7 @@ namespace Server
         /// <returns>Amount of money user has.</returns>
         public double GetMoney(long userId)
         {
-            Log("Client is trying to get user money...");
-
-           return db.GetUserMoney(userId);
+            return db.GetUserMoney(userId);
         }
 
 

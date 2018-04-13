@@ -132,19 +132,19 @@ namespace Client
                 return false;
             }
             
-            Order order = JsonConvert.DeserializeObject<Order>(
+            Info status = JsonConvert.DeserializeObject<Info>(
                 server.AddOrder(type, User.Id, amount)
             );
 
-            if (order != null)
-            {
-                Log("Emition successful!");
-                return true;
-            }
-            else
+            if (status == Info.Failed)
             {
                 Log("Failted to emit new order!");
                 return false;
+            }
+            else
+            {
+                Log("Emition successful! " + status);
+                return true;
             }
         }
 

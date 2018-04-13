@@ -58,7 +58,7 @@ namespace Client.Cli
             if (client.User != null)
             {
                 str += "\nName: " + client.User.Name + "\n";
-                str += "Wallet: " + client.User.Wallet.Count + " Diginotes\n";
+                str += "Wallet: " + client.User.Wallet.Count + " Diginotes | " + client.User.Money + " Euros\n";
                 str += "Quote: " + client.GetQuote() + "\n";
                 str += "----------";
             }

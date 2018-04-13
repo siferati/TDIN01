@@ -9,7 +9,8 @@ CREATE TABLE Users (
 	id INTEGER PRIMARY KEY,
 	name TEXT  NOT NULL,
 	username TEXT  NOT NULL UNIQUE,
-	password TEXT  NOT NULL
+	password TEXT  NOT NULL,
+	money REAL NOT NULL DEFAULT 0.0
 );
 
 CREATE TABLE Diginotes (

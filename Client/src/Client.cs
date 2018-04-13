@@ -110,6 +110,7 @@ namespace Client
             if (User != null)
             {
                 User.Wallet = JsonConvert.DeserializeObject<List<Diginote>>(server.GetWallet(User.Id));
+                User.Money = server.GetMoney(User.Id);
             }            
         }
 

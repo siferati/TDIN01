@@ -237,6 +237,19 @@ namespace Server
 
 
         /// <summary>
+        /// Get user's money.
+        /// </summary>
+        /// <param name="userId">User id.</param>
+        /// <returns>Amount of money user has.</returns>
+        public double GetMoney(long userId)
+        {
+            Log("Client is trying to get user money...");
+
+           return db.GetUserMoney(userId);
+        }
+
+
+        /// <summary>
         /// Logs the given string.
         /// </summary>
         /// <param name="str">String to log.</param>

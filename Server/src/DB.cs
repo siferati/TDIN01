@@ -120,7 +120,7 @@ namespace Server
         public User GetUser(string username, string password)
         {
             string sql = @"
-                SELECT id, name, username FROM Users
+                SELECT id, name, username, money FROM Users
                 WHERE username = @username
                 AND password = @password
             ";
@@ -140,6 +140,7 @@ namespace Server
                     (long) reader["id"],
                     (string) reader["name"],
                     (string) reader["username"],
+                    (double) reader["money"],
                     new List<Diginote>()
                 );
 
@@ -168,7 +169,7 @@ namespace Server
         /// <summary>
         /// Returns the diginotes given user has.
         /// </summary>
-        /// <param name="userId">User id</param>
+        /// <param name="userId">User id.</param>
         /// <returns>List of diginotes this user owns.</returns>
         public List<Diginote> GetWallet(long userId)
         {
@@ -215,6 +216,36 @@ namespace Server
             if (reader.Read())
             {
                 return (double) reader["value"];
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+
+        /// <summary>
+        /// Get amount of money user has.
+        /// </summary>
+        /// <param name="userId">User id.</param>
+        /// <returns>Current quote.</returns>
+        public double GetUserMoney(long userId)
+        {
+            string sql = @"
+                SELECT money
+                FROM Users
+                WHERE id = @userId
+            ";
+
+            SQLiteCommand cmd = new SQLiteCommand(sql, connection);
+
+            cmd.Parameters.AddWithValue("@userId", userId);
+
+            SQLiteDataReader reader = cmd.ExecuteReader();
+
+            if (reader.Read())
+            {
+                return (double)reader["money"];
             }
             else
             {

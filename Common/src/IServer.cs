@@ -51,5 +51,12 @@ namespace Common
         /// <param name="userId">User id.</param>
         /// <returns>Serialized user wallet.</returns>
         string GetWallet(long userId);
+
+        /// <summary>
+        /// Get user's money.
+        /// </summary>
+        /// <param name="userId">User id.</param>
+        /// <returns>Amount of money user has.</returns>
+        double GetMoney(long userId);
     }
 }

@@ -26,6 +26,11 @@ namespace Common
         public string Username { get; }
 
         /// <summary>
+        /// User money.
+        /// </summary>
+        public double Money { get; set; }
+
+        /// <summary>
         /// The user's wallet. It's a list of diginotes owned by this user.
         /// </summary>
         public List<Diginote> Wallet { get; set;  }
@@ -39,12 +44,13 @@ namespace Common
         /// <param name="name">The user's name.</param>
         /// <param name="username">Username.</param>
         /// <param name="wallet">Diginotes owned by this user.</param>
-        public User(long id, string name, string username, List<Diginote> wallet)
+        public User(long id, string name, string username, double money, List<Diginote> wallet)
         {
             this.Id = id;
             this.Name = name;
             this.Username = username;
             this.Wallet = wallet;
+            this.Money = money;
         }
     }
 }

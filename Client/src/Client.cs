@@ -120,16 +120,17 @@ namespace Client
         /// </summary>
         /// <param name="type">Type of order to add (buying or selling).</param>
         /// <param name="amount">Amount of diginotes to buy / sell.</param>
-        /// <returns>TRUE if the order was added, FALSE otherwise.</returns>
-        public bool AddOrder(OrderType type, long amount)
+        /// <returns>Status.</returns>
+        public Info AddOrder(OrderType type, long amount)
         {
             Log("Attempting to emit a new order...");
 
             UpdateUser();
+            // TODO take into account pending orders as well!
             if (type == OrderType.Selling && User.Wallet.Count < amount)
             {
                 Log("Emition failed: not enough diginotes to proceed with sale.");
-                return false;
+                return Info.Failed;
             }
             
             Info status = JsonConvert.DeserializeObject<Info>(
@@ -138,14 +139,14 @@ namespace Client
 
             if (status == Info.Failed)
             {
-                Log("Failted to emit new order!");
-                return false;
+                Log("Failed to emit new order!");
             }
             else
             {
                 Log("Emition successful! " + status);
-                return true;
             }
+
+            return status;
         }
 
 
@@ -190,6 +191,17 @@ namespace Client
         public double GetQuote()
         {
             return server.Quote;
+        }
+
+
+        /// <summary>
+        /// Adds a new quote.
+        /// </summary>
+        /// <param name="quote">New quote.</param>
+        /// <returns>TRUE if insert was successful, FALSE otherwise.</returns>
+        public bool AddQuote(double quote)
+        {
+            return server.SetQuote(quote);
         }
 
 

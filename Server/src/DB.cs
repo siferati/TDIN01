@@ -225,6 +225,26 @@ namespace Server
 
 
         /// <summary>
+        /// Inserts new quote value.
+        /// </summary>
+        /// <param name="quote">New quote value.</param>
+        /// <returns>TRUE if insert was successful, FALSE otherwise.</returns>
+        public bool InsertQuote(double quote)
+        {
+            string sql = @"
+                INSERT INTO Quote (value)
+                VALUES (@quote)
+            ";
+
+            SQLiteCommand cmd = new SQLiteCommand(sql, connection);
+
+            cmd.Parameters.AddWithValue("@quote", quote);
+
+            return (cmd.ExecuteNonQuery() > 0);
+        }
+
+
+        /// <summary>
         /// Get amount of money user has.
         /// </summary>
         /// <param name="userId">User id.</param>

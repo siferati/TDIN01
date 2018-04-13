@@ -64,7 +64,22 @@ namespace Client.Cli
                         {
                             Console.Write("Amount: ");
                             long amount = Convert.ToInt64(Console.ReadLine());
-                            client.AddOrder(OrderType.Selling, amount);
+                            Info status = client.AddOrder(OrderType.Selling, amount);
+
+                            if (status == Info.OrderParciallyCompleted || status == Info.OrderPending)
+                            {
+                                double currentQuote = client.GetQuote();
+                                Console.WriteLine("Current Quote: " + currentQuote);
+                                
+                                double quote = 0;
+                                do
+                                {
+                                    Console.Write("New Quote (less or equal than current quote): ");
+                                    quote = Convert.ToDouble(Console.ReadLine());
+                                } while (quote > currentQuote );
+                                
+                                client.AddQuote(quote);
+                            }
 
                             break;
                         }
@@ -73,8 +88,22 @@ namespace Client.Cli
                         {
                             Console.Write("Amount: ");
                             long amount = Convert.ToInt64(Console.ReadLine());
-                            client.AddOrder(OrderType.Purchase, amount);
+                            Info status = client.AddOrder(OrderType.Purchase, amount);
 
+                            if (status == Info.OrderParciallyCompleted || status == Info.OrderPending)
+                            {
+                                double currentQuote = client.GetQuote();
+                                Console.WriteLine("Current Quote: " + currentQuote);
+
+                                double quote = 0;
+                                do
+                                {
+                                    Console.Write("New Quote (higher or equal than current quote): ");
+                                    quote = Convert.ToDouble(Console.ReadLine());
+                                } while (quote < currentQuote);
+
+                                client.AddQuote(quote);
+                            }
                             break;
                         }
 

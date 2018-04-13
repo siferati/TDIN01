@@ -62,7 +62,7 @@ namespace Server
         /// <summary>
         /// The current quote of diginotes.
         /// </summary>
-        public double Quote { get; }
+        public double Quote { get; set; }
 
 
         /* --- METHODS --- */
@@ -88,6 +88,19 @@ namespace Server
         {
             Log("Shutting off...");
             db.Dispose();
+        }
+
+        
+        /// <summary>
+        /// Setter.
+        /// </summary>
+        /// <param name="quote"></param>
+        /// <returns></returns>
+        public bool SetQuote(double quote)
+        {
+            this.Quote = quote;
+
+            return db.InsertQuote(quote);
         }
 
 

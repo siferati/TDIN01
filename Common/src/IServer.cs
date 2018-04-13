@@ -10,7 +10,14 @@ namespace Common
         /// <summary>
         /// The current quote of diginotes.
         /// </summary>
-        double Quote { get; }
+        double Quote { get; set; }
+
+        /// <summary>
+        /// Setter.
+        /// </summary>
+        /// <param name="quote"></param>
+        /// <returns></returns>
+        bool SetQuote(double quote);
 
         /// <summary>
         /// Logs the user into the system.

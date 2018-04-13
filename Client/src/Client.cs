@@ -107,7 +107,10 @@ namespace Client
         /// </summary>
         public void UpdateUser()
         {
-            User.Wallet = JsonConvert.DeserializeObject<List<Diginote>>(server.GetWallet(User.Id));
+            if (User != null)
+            {
+                User.Wallet = JsonConvert.DeserializeObject<List<Diginote>>(server.GetWallet(User.Id));
+            }            
         }
 
 
@@ -122,7 +125,7 @@ namespace Client
             Log("Attempting to emit a new order...");
 
             UpdateUser();
-            if (User.Wallet.Count < amount)
+            if (type == OrderType.Selling && User.Wallet.Count < amount)
             {
                 Log("Emition failed: not enough diginotes to proceed with sale.");
                 return false;

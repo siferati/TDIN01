@@ -18,30 +18,35 @@ namespace Client.Cli
         public const int LOGOUT = 0;
 
         /// <summary>
+        /// Index of money menu entry.
+        /// </summary>
+        public const int MONEY = 1;
+
+        /// <summary>
         /// Index of emit selling order menu entry.
         /// </summary>
-        public const int SELLING_ORDER = 1;
+        public const int SELLING_ORDER = 2;
 
         /// <summary>
         /// Index of emit purchase order menu entry.
         /// </summary>
-        public const int PURCHASE_ORDER = 2;
+        public const int PURCHASE_ORDER = 3;
 
         /// <summary>
         /// Index of list pending orders menu entry.
         /// </summary>
-        public const int PENDING_ORDERS = 3;
+        public const int PENDING_ORDERS = 4;
 
         /// <summary>
         /// Index of exit menu entry.
         /// </summary>
-        public const int EXIT = 4;
+        public const int EXIT = 5;
 
 
         /* --- METHODS --- */
 
         public MainMenu(Client client) : base(client, "Main Menu",
-            new string[] {"Logout", "Emit Selling Order", "Emit Purchase Order", "List Pending Orders", "Exit" })
+            new string[] {"Logout", "Add Money", "Emit Selling Order", "Emit Purchase Order", "List Pending Orders", "Exit" })
         {
 
         }
@@ -58,6 +63,15 @@ namespace Client.Cli
                         {
                             client.Logout();
                             return new InitialMenu(client);
+                        }
+
+                    case MONEY:
+                        {
+                            Console.Write("Amount: ");
+                            long amount = Convert.ToInt64(Console.ReadLine());
+                            client.AddMoney(amount);
+
+                            break;
                         }
 
                     case SELLING_ORDER:

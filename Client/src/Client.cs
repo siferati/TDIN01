@@ -126,10 +126,31 @@ namespace Client
             Log("Attempting to emit a new order...");
 
             UpdateUser();
-            // TODO take into account pending orders as well!
-            if (type == OrderType.Selling && User.Wallet.Count < amount)
+
+            List<Order> pendingOrders = GetPendingOrders();
+            long sellingAmount = 0;
+            long purchaseAmount = 0;
+
+            foreach (Order order in pendingOrders)
+            {
+                if (order.Type == OrderType.Selling)
+                {
+                    sellingAmount += (order.Amount - order.CurrentAmount);
+                }
+                else if (order.Type == OrderType.Purchase)
+                {
+                    purchaseAmount += (order.Amount - order.CurrentAmount);
+                }
+            }
+
+            if (type == OrderType.Selling && User.Wallet.Count < (amount + sellingAmount))
             {
                 Log("Emition failed: not enough diginotes to proceed with sale.");
+                return Info.Failed;
+            }
+            else if (type == OrderType.Purchase && User.Money < ((amount + purchaseAmount) * GetQuote()))
+            {
+                Log("Emition failed: not enough money to proceed with purchase.");
                 return Info.Failed;
             }
             
@@ -202,6 +223,17 @@ namespace Client
         public bool AddQuote(double quote)
         {
             return server.SetQuote(quote);
+        }
+
+
+        /// <summary>
+        /// Add money.
+        /// </summary>
+        /// <param name="amount">Amount to add.</param>
+        /// <returns>TRUE if insert was successful, FALSE otherwise.</returns>
+        public bool AddMoney(long amount)
+        {
+            return server.AddMoney(User.Id, amount);
         }
 
 

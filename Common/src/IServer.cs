@@ -65,5 +65,14 @@ namespace Common
         /// <param name="userId">User id.</param>
         /// <returns>Amount of money user has.</returns>
         double GetMoney(long userId);
+
+
+        /// <summary>
+        /// Add money to given user.
+        /// </summary>
+        /// <param name="userId">User id.</param>
+        /// <param name="amount">Amount to add.</param>
+        /// <returns>TRUE if the adition was succesful, FALSE otherwise.</returns>
+        bool AddMoney(long userId, long amount);
     }
 }

@@ -239,6 +239,18 @@ namespace Server
 
 
         /// <summary>
+        /// Add money to given user.
+        /// </summary>
+        /// <param name="userId">User id.</param>
+        /// <param name="amount">Amount to add.</param>
+        /// <returns>TRUE if the adition was succesful, FALSE otherwise.</returns>
+        public bool AddMoney(long userId, long amount)
+        {
+            return db.UpdateUserMoney(userId, amount);
+        }
+
+
+        /// <summary>
         /// Get user's money.
         /// </summary>
         /// <param name="userId">User id.</param>

@@ -336,6 +336,9 @@ namespace Server
                     bool parcial = false;
                     foreach (Order pendingOrder in pendingOrders)
                     {
+                        long pendingOrderNeededAmount = pendingOrder.Amount - pendingOrder.CurrentAmount;
+                        long orderNeededAmount = order.Amount - order.CurrentAmount;
+
                         // ignore orders of same type or same owner
                         if (type == pendingOrder.Type || userId == pendingOrder.UserId)
                         {
@@ -343,20 +346,20 @@ namespace Server
                         }
 
                         // pending order has enough to satisfy order
-                        if (amount <= (pendingOrder.Amount - pendingOrder.CurrentAmount))
+                        if (orderNeededAmount <= pendingOrderNeededAmount)
                         {
                             // insert completed order
-                            InsertCompletedOrder(order, pendingOrder, amount);
+                            InsertCompletedOrder(order, pendingOrder, orderNeededAmount);
 
                             return Info.OrderCompleted;
                         }
                         // one pending order isn't enough
                         else
                         {
-                            InsertCompletedOrder(order, pendingOrder, (pendingOrder.Amount - pendingOrder.CurrentAmount));
+                            InsertCompletedOrder(order, pendingOrder, pendingOrderNeededAmount);
 
                             // update order amount
-                            order.Amount -= pendingOrder.Amount;
+                            order.CurrentAmount += pendingOrderNeededAmount;
                             parcial = true;
                         }
                     }

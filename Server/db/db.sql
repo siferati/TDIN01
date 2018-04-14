@@ -61,6 +61,3 @@ INSERT INTO Users ("money", "name", "username", "password") VALUES (20, "Um", "u
 INSERT INTO Diginotes ("userId") VALUES (2);
 INSERT INTO Diginotes ("userId") VALUES (2);
 INSERT INTO Diginotes ("userId") VALUES (2);
-
-INSERT INTO SellingOrders(timestamp, userId, amount) VALUES ("2018-01-20", 2, 10);
-INSERT INTO SellingOrders(timestamp, userId, amount) VALUES ("2018-01-30", 2, 5);

@@ -54,7 +54,7 @@ namespace Server
             }            
 
             // create and open connection to database
-            connection = new SQLiteConnection("Data Source=" + outpath + ";Version=3;foreign keys=true;");
+            connection = new SQLiteConnection("Data Source=" + outpath + ";Version=3;foreign keys=true;sqlite enable update delete limit=true");
             connection.Open();
 
             if (newDB)
@@ -417,6 +417,44 @@ namespace Server
 
 
         /// <summary>
+        /// Changes ownership of diginotes.
+        /// </summary>
+        /// <param name="userId">Old Owner.</param>
+        /// <param name="userId">New Owner.</param>
+        /// <param name="amount">Amount to add / remove.</param>
+        /// <returns>TRUE if updat was successful, FALSE otherwise.</returns>
+        public bool UpdateDiginoteOwnership(long userId1, long userId2, long amount)
+        {
+            string sql = @"
+                UPDATE Diginotes
+                SET userId = @userId2
+                WHERE userId IN (
+                    SELECT userId
+                    FROM Diginotes
+                    WHERE userId = @userId1
+                    LIMIT @amount
+                )
+            ";
+
+            SQLiteCommand cmd = new SQLiteCommand(sql, connection);
+
+            cmd.Parameters.AddWithValue("@userId1", userId1);
+            cmd.Parameters.AddWithValue("@userId2", userId2);
+            cmd.Parameters.AddWithValue("@amount", amount);
+
+            try
+            {
+                return (cmd.ExecuteNonQuery() > 0);
+            }
+            catch (SQLiteException e)
+            {
+                Console.WriteLine(e);
+                return false;
+            }
+        }
+
+
+        /// <summary>
         /// Inserts a completed order in the databse.
         /// </summary>
         /// <param name="order1">First order.</param>
@@ -456,16 +494,14 @@ namespace Server
                 {
                     UpdateUserMoney(order1.UserId, money);
                     UpdateUserMoney(order2.UserId, -1 * money);
+                    UpdateDiginoteOwnership(order1.UserId, order2.UserId, amount);
                 }
                 else if (order1.Type == OrderType.Purchase)
                 {
                     UpdateUserMoney(order2.UserId, money);
                     UpdateUserMoney(order1.UserId, -1 * money);
+                    UpdateDiginoteOwnership(order2.UserId, order1.UserId, amount);
                 }
-
-
-                // TODO update user wallets here
-
 
                 return true;
             }

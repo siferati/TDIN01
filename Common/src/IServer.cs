@@ -40,10 +40,18 @@ namespace Common
         /// Adds a new order to the given user.
         /// </summary>
         /// <param name="type">Type of order to add (buying or selling).</param>
-        /// <param name="user">User id.</param>
+        /// <param name="userId">User id.</param>
         /// <param name="amount">Amount of diginotes to buy / sell.</param>
         /// <returns>Serialized order that was added.</returns>
         string AddOrder(OrderType type, long userId, long amount);
+
+        /// <summary>
+        /// Adds a new order to the given user.
+        /// </summary>
+        /// <param name="type">Type of order to remove (buying or selling).</param>
+        /// <param name="orderId">Order to remove.</param>
+        /// <returns>TRUE if order was removed, FALSE otherwise.</returns>
+        bool DeleteOrder(OrderType type, long orderId);
 
         /// <summary>
         /// Returns the list of pending orders for given user.

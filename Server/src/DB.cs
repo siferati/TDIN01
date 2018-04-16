@@ -392,6 +392,53 @@ namespace Server
 
 
         /// <summary>
+        /// Deletes the given pending order.
+        /// </summary>
+        /// <param name="type">Type of order to remove (buying or selling).</param>
+        /// <param name="orderId">Order to remove.</param>
+        /// <returns>TRUE if order was deleted, FALSE otherwise.</returns>
+        public bool DeleteOrder(OrderType type, long orderId)
+        {
+            string table = "";
+            string idName = "";
+
+            if (type == OrderType.Purchase)
+            {
+                table = "PurchaseOrders";
+                idName = "purchaseOrderId";
+            }
+            else if (type == OrderType.Selling)
+            {
+                table = "SellingOrders";
+                idName = "sellingOrderId";
+            }
+
+            string sql = @"
+                DELETE FROM " + table + @"
+                WHERE id = @orderId
+                AND id NOT IN (
+                    SELET " + idName + @"AS id
+                    FROM CompletedOrders
+                )     
+            ";
+
+            SQLiteCommand cmd = new SQLiteCommand(sql, connection);
+
+            cmd.Parameters.AddWithValue("@orderId", orderId);
+
+            try
+            {
+                return (cmd.ExecuteNonQuery() > 0);
+            }
+            catch (SQLiteException e)
+            {
+                Console.WriteLine(e);
+                return false;
+            }
+        }
+
+
+        /// <summary>
         /// Updates the amount of money the user has.
         /// </summary>
         /// <param name="userId">User id.</param>

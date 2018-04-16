@@ -98,6 +98,8 @@ namespace Server
         /// <returns></returns>
         public bool SetQuote(double quote)
         {
+            Log("Updated quote from " + Quote + " to " + quote);
+
             this.Quote = quote;
 
             return db.InsertQuote(quote);
@@ -207,7 +209,7 @@ namespace Server
             }
             else
             {
-                Log("Emition sucessful: " + status);
+                Log("Emition successful: " + status);
             }
 
             return JsonConvert.SerializeObject(status);
@@ -251,12 +253,40 @@ namespace Server
 
 
         /// <summary>
+        /// Deletes an order.
+        /// </summary>
+        /// <param name="type">Type of order to remove (buying or selling).</param>
+        /// <param name="orderId">Order to remove.</param>
+        /// <returns>TRUE if order was removed, FALSE otherwise.</returns>
+        public bool DeleteOrder(OrderType type, long orderId)
+        {
+            Log("Deleting order #" + orderId + " ...");
+
+            bool status = db.DeleteOrder(type, orderId);
+
+            if (status)
+            {
+                Log("Deletion successful.");
+            }
+            else
+            {
+                Log("Deletion failed: order is already parcially completed.");
+            }
+
+            return status;
+        }
+
+
+        /// <summary>
         /// Logs the given string.
         /// </summary>
         /// <param name="str">String to log.</param>
         public void Log(string str)
         {
-            Console.WriteLine(DateTime.Now.ToString("[HH:mm:ss] [Server] ") + str);
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter("log.txt", true))
+            {
+                file.WriteLine(DateTime.Now.ToString("[HH:mm:ss] [Server] ") + str);
+            }
         }
     }
 }

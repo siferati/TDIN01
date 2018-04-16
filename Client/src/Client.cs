@@ -116,6 +116,31 @@ namespace Client
 
 
         /// <summary>
+        /// Deletes an order.
+        /// </summary>
+        /// <param name="type">Type of order to remove (buying or selling).</param>
+        /// <param name="orderId">Order to remove.</param>
+        /// <returns>TRUE if order was removed, FALSE otherwise.</returns>
+        public bool DeleteOrder(OrderType type, long orderId)
+        {
+            Log("Deleting order #" + orderId + " ...");
+
+            bool status = server.DeleteOrder(type, orderId);
+
+            if (status)
+            {
+                Log("Deletion successful.");
+            }
+            else
+            {
+                Log("Deletion failed: order is already parcially completed.");
+            }
+
+            return status;
+        }
+
+
+        /// <summary>
         /// Adds a new order.
         /// </summary>
         /// <param name="type">Type of order to add (buying or selling).</param>
@@ -164,7 +189,7 @@ namespace Client
             }
             else
             {
-                Log("Emition sucessful: " + status);
+                Log("Emition successful: " + status);
             }
 
             return status;
@@ -257,7 +282,10 @@ namespace Client
         /// <param name="str">String to log.</param>
         private void Log(string str)
         {
-            Console.WriteLine(DateTime.Now.ToString("[HH:mm:ss] ") + "[Client] " + str);
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter("log.txt", true))
+            {
+                file.WriteLine(DateTime.Now.ToString("[HH:mm:ss] ") + "[Client] " + str);
+            }
         }
     }
 }

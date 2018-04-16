@@ -75,7 +75,7 @@ namespace Server
             Log("Waking up...");
 
             // init database
-            db = new DB(DB_INPATH, DB_OUTPATH);
+            db = new DB(DB_INPATH, DB_OUTPATH, this);
 
             Quote = db.GetQuote();
         }
@@ -135,16 +135,16 @@ namespace Server
         /// <returns>TRUE if new user was created, FALSE otherwise.</returns>
         public bool Register(string name, string username, string password)
         {
-            Log("Client is trying to register a new user...");
+            Log("Registering a new user...");
 
             if (db.InsertUser(name, username, HashPassword(password)))
             {
-                Log("New user created.");
+                Log("Registration successful.");
                 return true;
             }
             else
             {
-                Log("Failed to create new user: username already exists.");
+                Log("Registration failed: username already exists.");
                 return false;
             }
         }
@@ -158,7 +158,7 @@ namespace Server
         /// <returns>Serialized user that logged in.</returns>
         public string Login(string username, string password)
         {
-            Log("Client is trying to login...");
+            Log("Logging in user...");
 
             User user = db.GetUser(username, HashPassword(password));
 
@@ -168,7 +168,7 @@ namespace Server
             }
             else
             {
-                Log("Failed to login: username and password don't match.");
+                Log("Login failed: username and password don't match.");
             }
 
             return JsonConvert.SerializeObject(user);
@@ -197,17 +197,17 @@ namespace Server
         /// <returns>Serialized order that was added.</returns>
         public string AddOrder(OrderType type, long userId, long amount)
         {
-            Log("Client is trying to emit new order...");
+            Log("Emitting new order...");
 
             Info status = db.InsertOrder(type, userId, amount);
             
             if (status == Info.Failed)
             {
-                Log("Failed to emit order.");
+                Log("Emission failed: order already exists.");
             }
             else
             {
-                Log("Order was emited successfully. " + status);
+                Log("Emition sucessful: " + status);
             }
 
             return JsonConvert.SerializeObject(status);
@@ -221,18 +221,7 @@ namespace Server
         /// <returns>List of pending orders.</returns>
         public string GetPendingOrders(long userId)
         {
-            Log("Client is trying to get pending orders...");
-
             List<Order> orders = db.GetPendingOrders(userId);
-
-            if (orders != null)
-            {
-                Log("Pending orders were retreived successfully.");
-            }
-            else
-            {
-                Log("Failed to retrieve pending orders.");
-            }
 
             return JsonConvert.SerializeObject(orders);
         }
@@ -265,9 +254,9 @@ namespace Server
         /// Logs the given string.
         /// </summary>
         /// <param name="str">String to log.</param>
-        private void Log(string str)
+        public void Log(string str)
         {
-            Console.WriteLine("[Server]: " + str);
+            Console.WriteLine(DateTime.Now.ToString("[HH:mm:ss] [Server] ") + str);
         }
     }
 }

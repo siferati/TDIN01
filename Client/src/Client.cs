@@ -86,18 +86,18 @@ namespace Client
         /// <returns>TRUE if user was able to login, FALSE otherwise.</returns>
         public bool Login(string username, string password)
         {
-            Log("Attempting to login...");
+            Log("Logging in...");
 
             User = JsonConvert.DeserializeObject<User>(server.Login(username, password));
 
             if (User != null)
             {
-                Log("Login successful!");
+                Log("Login successful.");
                 return true;
             }
             else
             {
-                Log("Failted to login!");
+                Log("Login failed: username and password don't match.");
                 return false;
             }
         }
@@ -123,7 +123,7 @@ namespace Client
         /// <returns>Status.</returns>
         public Info AddOrder(OrderType type, long amount)
         {
-            Log("Attempting to emit a new order...");
+            Log("Emitting new order...");
 
             UpdateUser();
 
@@ -145,12 +145,12 @@ namespace Client
 
             if (type == OrderType.Selling && User.Wallet.Count < (amount + sellingAmount))
             {
-                Log("Emition failed: not enough diginotes to proceed with sale.");
+                Log("Emission failed: not enough diginotes to proceed with sale.");
                 return Info.Failed;
             }
             else if (type == OrderType.Purchase && User.Money < ((amount + purchaseAmount) * GetQuote()))
             {
-                Log("Emition failed: not enough money to proceed with purchase.");
+                Log("Emission failed: not enough money to proceed with purchase.");
                 return Info.Failed;
             }
             
@@ -160,11 +160,11 @@ namespace Client
 
             if (status == Info.Failed)
             {
-                Log("Failed to emit new order!");
+                Log("Emission failed: order already exists.");
             }
             else
             {
-                Log("Emition successful! " + status);
+                Log("Emition sucessful: " + status);
             }
 
             return status;
@@ -176,7 +176,7 @@ namespace Client
         /// </summary>
         public void Logout()
         {
-            Log("Attempting to logout...");
+            Log("Logging out...");
             User = null;
         }
 
@@ -190,16 +190,16 @@ namespace Client
         /// <returns>TRUE if user was able to register, FALSE otherwise.</returns>
         public bool Register(String name, String username, String password)
         {
-            Log("Attempting to register a new user...");
+            Log("Registering a new user...");
 
             if (server.Register(name, username, password))
             {
-                Log("Registration successful!");
+                Log("Registration successful.");
                 return true;
             }
             else
             {
-                Log("Failted to register!");
+                Log("Registration failed: username already exists.");
                 return false;
             }
         }
@@ -243,20 +243,9 @@ namespace Client
         /// <returns>List of pending orders.</returns>
         public List<Order> GetPendingOrders()
         {
-            Log("Attempting to fetch pending orders...");
-
             List<Order> orders = JsonConvert.DeserializeObject<List<Order>>(
                 server.GetPendingOrders(User.Id)
             );
-
-            if (orders != null)
-            {
-                Log("Retrieval of pending orders was successful!");
-            }
-            else
-            {
-                Log("Failted to retrieve list of pending orders!");
-            }
 
             return orders;
         }
@@ -268,7 +257,7 @@ namespace Client
         /// <param name="str">String to log.</param>
         private void Log(string str)
         {
-            Console.WriteLine("[Client]: " + str);
+            Console.WriteLine(DateTime.Now.ToString("[HH:mm:ss] ") + "[Client] " + str);
         }
     }
 }

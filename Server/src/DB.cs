@@ -29,6 +29,11 @@ namespace Server
         /// </summary>
         private string outpath;
 
+        /// <summary>
+        /// The server instance.
+        /// </summary>
+        private Server server;
+
 
         /* --- METHODS --- */
 
@@ -37,10 +42,11 @@ namespace Server
         /// </summary>
         /// <param name="inpath">Path to the database creation script (.sql).</param>
         /// <param name="outpath">Path to the database file (.sqlite).</param>
-        public DB(string inpath, string outpath)
+        public DB(string inpath, string outpath, Server server = null)
         {
             this.inpath = inpath;
             this.outpath = outpath;
+            this.server = server;
 
             // true if database didn't exist yet
             bool newDB = false;
@@ -428,8 +434,8 @@ namespace Server
             string sql = @"
                 UPDATE Diginotes
                 SET userId = @userId2
-                WHERE userId IN (
-                    SELECT userId
+                WHERE id IN (
+                    SELECT id
                     FROM Diginotes
                     WHERE userId = @userId1
                     LIMIT @amount
@@ -444,7 +450,8 @@ namespace Server
 
             try
             {
-                return (cmd.ExecuteNonQuery() > 0);
+                int x = cmd.ExecuteNonQuery();
+                return (x > 0);
             }
             catch (SQLiteException e)
             {
@@ -495,12 +502,22 @@ namespace Server
                     UpdateUserMoney(order1.UserId, money);
                     UpdateUserMoney(order2.UserId, -1 * money);
                     UpdateDiginoteOwnership(order1.UserId, order2.UserId, amount);
+
+                    if (server != null)
+                    {
+                        server.Log("Selling Order #" + order1.Id + " sold " + amount + " Diginotes, at " + quote + " Euros each, to Purchase Order #" + order2.Id);
+                    }
                 }
                 else if (order1.Type == OrderType.Purchase)
                 {
                     UpdateUserMoney(order2.UserId, money);
                     UpdateUserMoney(order1.UserId, -1 * money);
                     UpdateDiginoteOwnership(order2.UserId, order1.UserId, amount);
+
+                    if (server != null)
+                    {
+                        server.Log("Selling Order #" + order2.Id + " sold " + amount + " Diginotes, at " + quote + " Euros each, to Purchase Order #" + order1.Id);
+                    }
                 }
 
                 return true;

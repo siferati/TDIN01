@@ -273,7 +273,7 @@ namespace Client
 
 
                 }
-                catch(FormatException ex)
+                catch(FormatException)
                 {
                     this.panelNewBuyOrder.Visible = true;
                     this.panelBuyProgress.Visible = false;
@@ -336,7 +336,7 @@ namespace Client
             try
             {
                 quote = Convert.ToDouble(input);
-            }catch(FormatException ex)
+            }catch(FormatException)
             {
                 this.put_message_buy_error("Please select a valid quote");
                 return;
@@ -421,7 +421,7 @@ namespace Client
             {
                 quote = Convert.ToDouble(input);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 this.put_message_buy_error("Please select a valid quote");
                 return;
@@ -493,7 +493,7 @@ namespace Client
 
 
                 }
-                catch (FormatException ex)
+                catch (FormatException)
                 {
                     this.panelNewSellOrder.Visible = true;
                     this.panelProgress.Visible = false;
@@ -519,7 +519,7 @@ namespace Client
             {
                 quote = Convert.ToDouble(input);
             }
-            catch (FormatException ex)
+            catch (FormatException)
             {
                 this.put_message_sell_error("Please select a valid quote");
                 return;
@@ -552,7 +552,7 @@ namespace Client
             {
                 quote = Convert.ToDouble(input);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 this.put_message_sell_error("Please select a valid quote");
                 return;

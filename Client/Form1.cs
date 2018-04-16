@@ -52,7 +52,8 @@ namespace Client
 
             if (username.Length >= 5 && nickname.Length >= 5 && password.Equals(password2) && client.Register(this.username, this.nickname, this.password))
             {
-
+                client.Login(this.nickname, this.password);
+                mainPage.inicialize_wallet();
                 this.Hide();
                 mainPage.Show();
             }
@@ -92,6 +93,7 @@ namespace Client
             this.panelInErrorMsg.Visible = false;
             if (!this.nickname.Equals("") && client.Login(this.nickname, this.password))
             {
+                mainPage.inicialize_wallet();
                 this.Hide();
                 mainPage.Show();
             }

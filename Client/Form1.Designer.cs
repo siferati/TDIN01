@@ -179,8 +179,8 @@ namespace Client
             this.bunifuMaterialTextbox4.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.bunifuMaterialTextbox4.Font = new System.Drawing.Font("Century Gothic", 9.75F);
             this.bunifuMaterialTextbox4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.bunifuMaterialTextbox4.HintForeColor = System.Drawing.Color.Empty;
-            this.bunifuMaterialTextbox4.HintText = "";
+  //          this.bunifuMaterialTextbox4.HintForeColor = System.Drawing.Color.Empty;
+  //          this.bunifuMaterialTextbox4.HintText = "";
             this.bunifuMaterialTextbox4.isPassword = true;
             this.bunifuMaterialTextbox4.LineFocusedColor = System.Drawing.Color.Orange;
             this.bunifuMaterialTextbox4.LineIdleColor = System.Drawing.Color.Orange;
@@ -191,7 +191,7 @@ namespace Client
             this.bunifuMaterialTextbox4.Name = "bunifuMaterialTextbox4";
             this.bunifuMaterialTextbox4.Size = new System.Drawing.Size(346, 31);
             this.bunifuMaterialTextbox4.TabIndex = 11;
-            this.bunifuMaterialTextbox4.Text = "Any";
+ //           this.bunifuMaterialTextbox4.Text = "Any";
             this.bunifuMaterialTextbox4.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.bunifuMaterialTextbox4.OnValueChanged += new System.EventHandler(this.bunifuMaterialTextbox4_OnValueChanged);
             // 
@@ -212,8 +212,8 @@ namespace Client
             this.bunifuMaterialTextbox3.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.bunifuMaterialTextbox3.Font = new System.Drawing.Font("Century Gothic", 9.75F);
             this.bunifuMaterialTextbox3.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.bunifuMaterialTextbox3.HintForeColor = System.Drawing.Color.Empty;
-            this.bunifuMaterialTextbox3.HintText = "Password";
+  //          this.bunifuMaterialTextbox3.HintForeColor = System.Drawing.Color.Empty;
+  //          this.bunifuMaterialTextbox3.HintText = "Password";
             this.bunifuMaterialTextbox3.isPassword = true;
             this.bunifuMaterialTextbox3.LineFocusedColor = System.Drawing.Color.Orange;
             this.bunifuMaterialTextbox3.LineIdleColor = System.Drawing.Color.Orange;
@@ -224,7 +224,7 @@ namespace Client
             this.bunifuMaterialTextbox3.Name = "bunifuMaterialTextbox3";
             this.bunifuMaterialTextbox3.Size = new System.Drawing.Size(346, 31);
             this.bunifuMaterialTextbox3.TabIndex = 9;
-            this.bunifuMaterialTextbox3.Text = "Some";
+ //           this.bunifuMaterialTextbox3.Text = "Some";
             this.bunifuMaterialTextbox3.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.bunifuMaterialTextbox3.OnValueChanged += new System.EventHandler(this.bunifuMaterialTextbox3_OnValueChanged);
             // 
@@ -245,8 +245,8 @@ namespace Client
             this.bunifuMaterialTextbox2.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.bunifuMaterialTextbox2.Font = new System.Drawing.Font("Century Gothic", 9.75F);
             this.bunifuMaterialTextbox2.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.bunifuMaterialTextbox2.HintForeColor = System.Drawing.Color.Empty;
-            this.bunifuMaterialTextbox2.HintText = "Nick Name - Most Have at least 5 characters";
+     //       this.bunifuMaterialTextbox2.HintForeColor = System.Drawing.Color.Empty;
+     //       this.bunifuMaterialTextbox2.HintText = "Nick Name - Most Have at least 5 characters";
             this.bunifuMaterialTextbox2.isPassword = false;
             this.bunifuMaterialTextbox2.LineFocusedColor = System.Drawing.Color.Orange;
             this.bunifuMaterialTextbox2.LineIdleColor = System.Drawing.Color.Orange;
@@ -277,8 +277,8 @@ namespace Client
             this.bunifuMaterialTextbox1.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.bunifuMaterialTextbox1.Font = new System.Drawing.Font("Century Gothic", 9.75F);
             this.bunifuMaterialTextbox1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.bunifuMaterialTextbox1.HintForeColor = System.Drawing.Color.Empty;
-            this.bunifuMaterialTextbox1.HintText = "Full Name - Most Have at least 5 characters";
+     //       this.bunifuMaterialTextbox1.HintForeColor = System.Drawing.Color.Empty;
+     //       this.bunifuMaterialTextbox1.HintText = "Full Name - Most Have at least 5 characters";
             this.bunifuMaterialTextbox1.isPassword = false;
             this.bunifuMaterialTextbox1.LineFocusedColor = System.Drawing.Color.Orange;
             this.bunifuMaterialTextbox1.LineIdleColor = System.Drawing.Color.Orange;
@@ -362,8 +362,8 @@ namespace Client
             this.bunifuMaterialTextbox7.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.bunifuMaterialTextbox7.Font = new System.Drawing.Font("Century Gothic", 9.75F);
             this.bunifuMaterialTextbox7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.bunifuMaterialTextbox7.HintForeColor = System.Drawing.Color.Empty;
-            this.bunifuMaterialTextbox7.HintText = "Password";
+   //         this.bunifuMaterialTextbox7.HintForeColor = System.Drawing.Color.Empty;
+    //        this.bunifuMaterialTextbox7.HintText = "Password";
             this.bunifuMaterialTextbox7.isPassword = true;
             this.bunifuMaterialTextbox7.LineFocusedColor = System.Drawing.Color.Orange;
             this.bunifuMaterialTextbox7.LineIdleColor = System.Drawing.Color.Orange;
@@ -374,7 +374,7 @@ namespace Client
             this.bunifuMaterialTextbox7.Name = "bunifuMaterialTextbox7";
             this.bunifuMaterialTextbox7.Size = new System.Drawing.Size(346, 31);
             this.bunifuMaterialTextbox7.TabIndex = 19;
-            this.bunifuMaterialTextbox7.Text = "Some";
+ //           this.bunifuMaterialTextbox7.Text = "Some";
             this.bunifuMaterialTextbox7.TextAlign = System.Windows.Forms.HorizontalAlignment.Left;
             this.bunifuMaterialTextbox7.OnValueChanged += new System.EventHandler(this.bunifuMaterialTextbox7_OnValueChanged_1);
             // 
@@ -394,8 +394,8 @@ namespace Client
             this.bunifuMaterialTextbox8.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.bunifuMaterialTextbox8.Font = new System.Drawing.Font("Century Gothic", 9.75F);
             this.bunifuMaterialTextbox8.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.bunifuMaterialTextbox8.HintForeColor = System.Drawing.Color.Empty;
-            this.bunifuMaterialTextbox8.HintText = "Nickname";
+    //        this.bunifuMaterialTextbox8.HintForeColor = System.Drawing.Color.Empty;
+    //        this.bunifuMaterialTextbox8.HintText = "Nickname";
             this.bunifuMaterialTextbox8.isPassword = false;
             this.bunifuMaterialTextbox8.LineFocusedColor = System.Drawing.Color.Orange;
             this.bunifuMaterialTextbox8.LineIdleColor = System.Drawing.Color.Orange;

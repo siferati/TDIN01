@@ -6,4 +6,4 @@
 ### How to run
 
 * Open the .sln file in Visual Studio and build it.
-* Run server.exe and client.exe.
+* Run server/bin/debug/server.exe and client/bin/debug/client.exe.

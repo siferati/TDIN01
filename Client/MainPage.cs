@@ -93,9 +93,9 @@ namespace Client
 
             updateBuying("" + aux);
             updateQuote("" + quote);
+            updateAvailableBalance("" + (client.User.Money - aux * quote));
 
 
-                
         }
 
         public void inicialize_selling()
@@ -115,7 +115,7 @@ namespace Client
                     row.Add(order.Timestamp);
                     row.Add(order.Amount);
                     row.Add("Apagar");
-                    dataGridView1.Rows.Add(row.ToArray());
+                    dataGridView2.Rows.Add(row.ToArray());
 
                 }
             }
@@ -126,7 +126,12 @@ namespace Client
 
             updateSelling("" + aux);
             updateQuote("" + quote);
+            updateDiginotesOwned("" + client.User.Wallet.Count);
+
+
         }
+
+
 
         private void updateBuying(String amount)
         {
@@ -141,6 +146,7 @@ namespace Client
         private void updateAvailableBalance(string balance)
         {
             label35.Text = balance;
+            label22.Text = balance;
         }
 
         private void updateFullName(string name)
@@ -151,6 +157,7 @@ namespace Client
         private void updateDiginotesOwned(string no)
         {
             this.labelDigisOwned.Text = no;
+            this.label18.Text = no;
         }
 
         private void updateQuote(string quote)
@@ -440,6 +447,8 @@ namespace Client
                 this.put_message_buy_success("Quote Successufully updated");
                 label32.Text = input;
             }
+
+            this.inicialize_purchase();
         }
 
 
@@ -472,7 +481,7 @@ namespace Client
 
 
                         this.put_message_sell_error("Not All Diginotes were sold. You must define a new quote (smaller or equal) than the current quote (" + currentQuote + ")");
-                        this.panelNewSellOrder.Visible = true;
+                        this.panelNewSellOrder.Visible = false;
                         this.panelProgress.Visible = false;
                         this.panelSelectQoute.Visible = true;
                         this.status = Status.SELLING;
@@ -536,6 +545,9 @@ namespace Client
                 client.AddQuote(quote);
                 this.status = Status.NONE;
                 this.put_message_buy_success("Order Successufully created");
+                this.panelNewSellOrder.Visible = true;
+                this.panelProgress.Visible = false;
+                this.panelSelectQoute.Visible = false;
                 this.inicialize_selling();
 
             }
@@ -571,6 +583,8 @@ namespace Client
                 this.put_message_sell_success("Quote Successufully updated");
                 label6.Text = input;
             }
+
+            this.inicialize_selling();
 
         }
     }

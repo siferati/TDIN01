@@ -16,16 +16,25 @@ namespace Common
         /// Setter.
         /// </summary>
         /// <param name="quote"></param>
+        /// <param name="type"></param> 
         /// <returns></returns>
-        bool SetQuote(double quote);
+        bool SetQuote(double quote, OrderType type);
 
         /// <summary>
         /// Logs the user into the system.
         /// </summary>
         /// <param name="username">Username.</param>
         /// <param name="password">Password.</param>
+        /// <param name="address">User Address</param>
         /// <returns>TRUE if username and passsword match, FALSE otherwise.</returns>
-        string Login(string username, string password);
+        string Login(string username, string password, string address);
+        
+        /// <summary>
+        /// Logs the user out of the system.
+        /// </summary>
+        /// <param name="id">User Id</param>
+        /// <returns></returns>
+        void Logout(string id);
 
         /// <summary>
         /// Registers a new user into the system.
@@ -82,5 +91,15 @@ namespace Common
         /// <param name="amount">Amount to add.</param>
         /// <returns>TRUE if the adition was succesful, FALSE otherwise.</returns>
         bool AddMoney(long userId, long amount);
+
+
+        /// <summary>
+        /// Confirms an order after being suspended
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="orderId"></param>
+        /// <returns></returns>
+        bool ConfirmOrder(OrderType type, long orderId);
+
     }
 }

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
+using System.Threading.Tasks;
 using static Common.Order;
 
 namespace Server
@@ -33,6 +34,7 @@ namespace Server
         /// The server instance.
         /// </summary>
         private Server server;
+
 
 
         /* --- METHODS --- */
@@ -336,7 +338,7 @@ namespace Server
                     Order order = GetOrder(type, (long)reader["id"]);
 
                     // get all pending orders
-                    List<Order> pendingOrders = GetPendingOrders();
+                    List<Order> pendingOrders = GetPendingOrders(true);
 
                     // true if order was parcially completed
                     bool parcial = false;
@@ -413,28 +415,67 @@ namespace Server
                 idName = "sellingOrderId";
             }
 
-            string sql = @"
-                DELETE FROM " + table + @"
-                WHERE id = @orderId
-                AND id NOT IN (
-                    SELET " + idName + @"AS id
-                    FROM CompletedOrders
-                )     
-            ";
+            string sql = @"SELECT * FROM CompletedOrders
+                WHERE " + idName + @" = @orderId";
+
 
             SQLiteCommand cmd = new SQLiteCommand(sql, connection);
-
             cmd.Parameters.AddWithValue("@orderId", orderId);
+            SQLiteDataReader reader = cmd.ExecuteReader();
 
-            try
+            if (reader.HasRows)
             {
-                return (cmd.ExecuteNonQuery() > 0);
+                // Total sold
+                long total = 0;
+                while (reader.Read())
+                {
+                    total += (long)reader["amount"];
+                }
+
+                // UPDATE
+                sql = @"
+                UPDATE " + table + @"
+                SET amount = @amount
+                WHERE id = @orderId
+             ";
+
+                cmd = new SQLiteCommand(sql, connection);
+                cmd.Parameters.AddWithValue("@orderId", orderId);
+                cmd.Parameters.AddWithValue("@amount", total);
+
+                try
+                {
+                    int x = cmd.ExecuteNonQuery();
+                    return (x > 0);
+                }
+                catch (SQLiteException e)
+                {
+                    Console.WriteLine(e);
+                    return false;
+                }
             }
-            catch (SQLiteException e)
+            else
             {
-                Console.WriteLine(e);
-                return false;
+                sql = @"
+                DELETE FROM " + table + @"
+                WHERE id = @orderId";
+
+                cmd = new SQLiteCommand(sql, connection);
+
+                cmd.Parameters.AddWithValue("@orderId", orderId);
+
+                try
+                {
+                    return (cmd.ExecuteNonQuery() > 0);
+                }
+                catch (SQLiteException e)
+                {
+                    Console.WriteLine(e);
+                    return false;
+                }
             }
+
+            
         }
 
 
@@ -566,6 +607,10 @@ namespace Server
                         server.Log("Selling Order #" + order2.Id + " sold " + amount + " Diginotes, at " + quote + " Euros each, to Purchase Order #" + order1.Id);
                     }
                 }
+                Task.Run(() => server.UpdateUser(order1.UserId));
+                Task.Run(() => server.UpdateUser(order2.UserId));
+                //server.UpdateUser(order1.UserId);
+                //server.UpdateUser(order2.UserId);
 
                 return true;
             }
@@ -574,6 +619,40 @@ namespace Server
                 Console.WriteLine(e);
                 return false;
             }
+        }
+
+
+        public bool UpdateAvailableOrder(OrderType type, long orderId, long available)
+        {
+            string table = "";
+            if (type == OrderType.Purchase)
+            {
+                table = "PurchaseOrders";
+            }
+            else if (type == OrderType.Selling)
+            {
+                table = "SellingOrders";
+            }
+
+            string sql = @"
+                UPDATE " + table + @"
+                SET available = @avail
+                WHERE id = @orderId
+             ";
+
+            SQLiteCommand cmd = new SQLiteCommand(sql, connection);
+            cmd.Parameters.AddWithValue("@orderId", orderId);
+            cmd.Parameters.AddWithValue("@avail", available);
+            try
+            {
+                return (cmd.ExecuteNonQuery() > 0);
+            }
+            catch (SQLiteException e)
+            {
+                Console.WriteLine(e);
+                return false;
+            }
+                         
         }
 
 
@@ -629,11 +708,11 @@ namespace Server
         /// </summary>
         /// <param name="userId">User id.</param>
         /// <returns>List of pending orders.</returns>
-        public List<Order> GetPendingOrders(long userId)
+        public List<Order> GetPendingOrders(long userId, bool active)
         {
             // pending purchase orders
             string sql = @"
-                SELECT purchaseOrderId as pId, PurchaseOrders.amount AS goalAmount, SUM(CompletedOrders.amount) AS currentAmount, PurchaseOrders.timestamp, PurchaseOrders.userId
+                SELECT purchaseOrderId as pId, PurchaseOrders.amount AS goalAmount, SUM(CompletedOrders.amount) AS currentAmount, PurchaseOrders.timestamp, PurchaseOrders.userId, PurchaseOrders.available
                 FROM PurchaseOrders, CompletedOrders, SellingOrders
                 WHERE PurchaseOrders.userId = @userId
                 AND PurchaseOrders.id = purchaseOrderId
@@ -641,7 +720,7 @@ namespace Server
                 GROUP BY pId
                 HAVING goalAmount > currentAmount
                 UNION
-                SELECT id AS pId, amount AS goalAmount, 0 AS currentAmount, timestamp, userId
+                SELECT id AS pId, amount AS goalAmount, 0 AS currentAmount, timestamp, userId, available
                 FROM PurchaseOrders
                 WHERE NOT EXISTS (
 	                SELECT *
@@ -661,19 +740,26 @@ namespace Server
 
             while (reader.Read())
             {
+                if (active && (long)reader["available"] > 0)
+                    continue;
+
                 orders.Add(new Order(
                     (long) reader["pId"],
                     (long) reader["userId"],
                     OrderType.Purchase,
                     (DateTime) reader["timestamp"],
                     (long) reader["goalAmount"],
+                    (long)reader["available"],
                     (long)reader["currentAmount"]
+                    
                 ));
+
+
             }
 
             // pending selling orders
             sql = @"
-                SELECT sellingOrderId as sId, SellingOrders.amount AS goalAmount, SUM(CompletedOrders.amount) AS currentAmount, SellingOrders.timestamp, SellingOrders.userId
+                SELECT sellingOrderId as sId, SellingOrders.amount AS goalAmount, SUM(CompletedOrders.amount) AS currentAmount, SellingOrders.timestamp, SellingOrders.userId, SellingOrders.available
                 FROM PurchaseOrders, CompletedOrders, SellingOrders
                 WHERE SellingOrders.userId = @userId
                 AND PurchaseOrders.id = purchaseOrderId
@@ -681,7 +767,7 @@ namespace Server
                 GROUP BY sId
                 HAVING goalAmount > currentAmount
                 UNION
-                SELECT id AS sId, amount AS goalAmount, 0 AS currentAmount, timestamp, userId
+                SELECT id AS sId, amount AS goalAmount, 0 AS currentAmount, timestamp, userId, available
                 FROM SellingOrders
                 WHERE NOT EXISTS (
 	                SELECT *
@@ -699,12 +785,17 @@ namespace Server
 
             while (reader.Read())
             {
+                
+                if (active && (long)reader["available"] > 0)
+                    continue;
+
                 orders.Add(new Order(
                     (long)reader["sId"],
                     (long) reader["userId"],
                     OrderType.Selling,
                     (DateTime)reader["timestamp"],
                     (long)reader["goalAmount"],
+                    (long)reader["available"],
                     (long)reader["currentAmount"]
                 ));
             }
@@ -716,7 +807,7 @@ namespace Server
         /// Returns an ordererd list of all pending orders of all users.
         /// </summary>
         /// <returns>List of pending orders.</returns>
-        public List<Order> GetPendingOrders()
+        public List<Order> GetPendingOrders(bool active)
         {
             string sql = @"
                 SELECT id
@@ -731,7 +822,7 @@ namespace Server
 
             while (reader.Read())
             {
-                orders.AddRange(GetPendingOrders((long) reader["id"]));
+                orders.AddRange(GetPendingOrders((long) reader["id"], active));
             }
 
             // sort orders
@@ -739,5 +830,31 @@ namespace Server
 
             return orders;
         }
+
+
+        public void restoreAvailable()
+        {
+            string sql = @"SELECT id FROM SellingOrders";
+            SQLiteCommand cmd = new SQLiteCommand(sql, connection);
+            SQLiteDataReader reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                UpdateAvailableOrder(OrderType.Selling, (long)reader["id"], 0);
+            }
+
+
+            sql = @"SELECT id FROM PurchaseOrders";
+            cmd = new SQLiteCommand(sql, connection);
+            reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                UpdateAvailableOrder(OrderType.Purchase, (long)reader["id"], 0);
+            }
+
+        }
+        
+
     }
 }

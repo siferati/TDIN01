@@ -131,7 +131,7 @@ namespace Client.Cli
                                 } while (quote < currentQuote);
                             }
 
-                            client.AddQuote(quote);
+                            client.AddQuote(quote, OrderType.Purchase);
 
                             break;
                         }
@@ -154,7 +154,7 @@ namespace Client.Cli
                                     quote = Convert.ToDouble(Console.ReadLine());
                                 } while (quote > currentQuote );
                                 
-                                client.AddQuote(quote);
+                                client.AddQuote(quote, OrderType.Purchase);
                             }
 
                             break;
@@ -178,7 +178,7 @@ namespace Client.Cli
                                     quote = Convert.ToDouble(Console.ReadLine());
                                 } while (quote < currentQuote);
 
-                                client.AddQuote(quote);
+                                client.AddQuote(quote, OrderType.Purchase);
                             }
                             break;
                         }

@@ -19,7 +19,7 @@ namespace Client
         private string nickname = "";
         private string password = "";
         private string password2 = "";
-        private MainPage mainPage = null;
+         
         private Client client;
 
 
@@ -31,7 +31,6 @@ namespace Client
             this.panelInErrorMsg.Visible = false;
             this.panelUpErrorMsg.Visible = false;
 
-            mainPage = new MainPage(client);
             this.client = client;    
         }
 
@@ -53,9 +52,10 @@ namespace Client
             if (username.Length >= 5 && nickname.Length >= 5 && password.Equals(password2) && client.Register(this.username, this.nickname, this.password))
             {
                 client.Login(this.nickname, this.password);
-                mainPage.inicialize_wallet();
+                client.mainPage.inicialize_wallet();
+                
                 this.Hide();
-                mainPage.Show();
+                client.mainPage.Show();
             }
             else
             {
@@ -93,9 +93,10 @@ namespace Client
             this.panelInErrorMsg.Visible = false;
             if (!this.nickname.Equals("") && client.Login(this.nickname, this.password))
             {
-                mainPage.inicialize_wallet();
+                client.mainPage.inicialize_wallet();
+                //client.rem.PutMyForm(client.mainPage);
                 this.Hide();
-                mainPage.Show();
+                client.mainPage.Show();
             }
             else
             {

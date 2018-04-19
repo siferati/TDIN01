@@ -5,15 +5,21 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Remoting;
 using System.Windows.Forms;
+using System.Runtime.Remoting.Channels;
+using System.Runtime.Remoting.Channels.Tcp;
 using static Common.Order;
+using Common.src;
+using System.Collections;
 
 namespace Client
 {
+   
     /// <summary>
     /// Represents a client.
     /// </summary>
-    public class Client
+    public class Client 
     {
+       
         /// <summary>
         /// Client entry point.
         /// </summary>
@@ -35,13 +41,19 @@ namespace Client
             {
                 //start gui
                 Application.EnableVisualStyles();
-                Application.SetCompatibleTextRenderingDefault(false);
-                Application.Run(new Form1(client));
+               // Application.SetCompatibleTextRenderingDefault(false);
+                form = new Form1(client);
+                Application.Run(form);
             }
         }
 
 
         /* --- ATTRIBUTES --- */
+
+
+        public MainPage mainPage;
+
+        public static Form1 form;
 
         /// <summary>
         /// Server proxy.
@@ -54,18 +66,49 @@ namespace Client
         public User User { get; set; }
 
 
+        /// <summary>
+        /// Client port.
+        /// </summary>
+        public int port  {get; set;}
+
+
+
         /* --- METHODS --- */
 
         /// <summary>
         /// Returns an instance of Client.
         /// </summary>
+        
         public Client()
         {
             User = null;
-
+            
             Log("Creating server proxy...");
-            server = (IServer)RemotingServices.Connect(typeof(IServer), "tcp://localhost:9000/Server.rem");
+          //   server = (IServer)RemotingServices.Connect(typeof(IServer), "tcp://localhost:9000/Server.rem");
             Log("Server proxy created.");
+
+
+            // register the channel
+            IDictionary props = new Hashtable();
+            props["port"] = 0;  // let the system choose a free port
+            BinaryServerFormatterSinkProvider serverProvider = new BinaryServerFormatterSinkProvider();
+            serverProvider.TypeFilterLevel = System.Runtime.Serialization.Formatters.TypeFilterLevel.Full;
+            BinaryClientFormatterSinkProvider clientProvider = new BinaryClientFormatterSinkProvider();
+            TcpChannel chan = new TcpChannel(props, clientProvider, serverProvider);  // instantiate the channel
+            ChannelServices.RegisterChannel(chan, false);                             // register the channel
+
+            ChannelDataStore data = (ChannelDataStore)chan.ChannelData;
+            this.port = new Uri(data.ChannelUris[0]).Port;                            // get the port
+
+            RemotingConfiguration.Configure("Client.exe.config", false);             // register the server objects
+            RemotingConfiguration.RegisterWellKnownServiceType(typeof(RemMessage), "Client.Rem", WellKnownObjectMode.Singleton);  // register my remote object for service
+
+            this.mainPage = new MainPage(this);
+            RemMessage r = (RemMessage)RemotingServices.Connect(typeof(RemMessage), "tcp://localhost:" + port.ToString() + "/Client.Rem");    // connect to the registered my remote object here
+            r.PutMyForm(this.mainPage);
+
+            //r.PutMyForm(mainPage);
+            server = (IServer)Activator.GetObject(typeof(IServer), "tcp://localhost:9000/Server.rem");  
         }
 
 
@@ -88,7 +131,7 @@ namespace Client
         {
             Log("Logging in...");
 
-            User = JsonConvert.DeserializeObject<User>(server.Login(username, password));
+            User = JsonConvert.DeserializeObject<User>(server.Login(username, password, "tcp://localhost:" + this.port.ToString() + "/Client.Rem"));
 
             if (User != null)
             {
@@ -201,6 +244,8 @@ namespace Client
         /// </summary>
         public void Logout()
         {
+            if(User != null)
+            server.Logout("" + User.Id);
             Log("Logging out...");
             User = null;
         }
@@ -245,9 +290,9 @@ namespace Client
         /// </summary>
         /// <param name="quote">New quote.</param>
         /// <returns>TRUE if insert was successful, FALSE otherwise.</returns>
-        public bool AddQuote(double quote)
+        public bool AddQuote(double quote, OrderType type)
         {
-            return server.SetQuote(quote);
+            return server.SetQuote(quote, type);
         }
 
 
@@ -259,6 +304,13 @@ namespace Client
         public bool AddMoney(long amount)
         {
             return server.AddMoney(User.Id, amount);
+        }
+
+
+
+        public bool confirmOrder(Common.Order.OrderType type, long orderId)
+        {
+            return server.ConfirmOrder(type, orderId);
         }
 
 
@@ -287,5 +339,11 @@ namespace Client
                 file.WriteLine(DateTime.Now.ToString("[HH:mm:ss] ") + "[Client] " + str);
             }
         }
+
+
+
+        
     }
 }
+
+

@@ -1,13 +1,18 @@
 ﻿using Common;
+using Common.src;
 using Newtonsoft.Json;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
 using static Common.Order;
+
 
 namespace Server
 {
@@ -25,6 +30,7 @@ namespace Server
         {
 
             Console.WriteLine("Starting...");
+            
 
             // register the channel
             TcpChannel ch = new TcpChannel(9000);
@@ -35,7 +41,7 @@ namespace Server
                 typeof(Server), "Server.Rem",
                 WellKnownObjectMode.Singleton
             );
-
+            RemotingServices.Connect(typeof(Server), "tcp://localhost:" + 9000 + "/Server.Rem");
             Console.WriteLine("Waiting for a client to connect...");
             Console.WriteLine("Pess any key to shutdown the server.");
             Console.ReadLine();
@@ -64,6 +70,10 @@ namespace Server
         /// </summary>
         public double Quote { get; set; }
 
+        /// <summary>
+        /// The current users logged
+        /// </summary>
+        Hashtable users_logged = new Hashtable();
 
         /* --- METHODS --- */
 
@@ -76,7 +86,7 @@ namespace Server
 
             // init database
             db = new DB(DB_INPATH, DB_OUTPATH, this);
-
+            db.restoreAvailable();      // in case server crashs, orders my be suspended forever
             Quote = db.GetQuote();
         }
 
@@ -96,13 +106,96 @@ namespace Server
         /// </summary>
         /// <param name="quote"></param>
         /// <returns></returns>
-        public bool SetQuote(double quote)
+        public bool SetQuote(double quote, OrderType type)
         {
             Log("Updated quote from " + Quote + " to " + quote);
+
+            
+
+            foreach (DictionaryEntry pair in users_logged)
+            {
+                IClient rem = (IClient)RemotingServices.Connect(typeof(IClient), pair.Value.ToString());
+                rem.updateQuote(quote);
+            }
+
+            if( (type == OrderType.Selling && quote < this.Quote) || (type == OrderType.Purchase && quote > this.Quote))
+                Task.Run(() => ReviewPendingOrders(quote, type));
 
             this.Quote = quote;
 
             return db.InsertQuote(quote);
+        }
+
+
+        private System.Threading.Timer timer;
+
+        /// <summary>
+        /// When quote is changed, pending orders quote must be updated
+        /// </summary>
+        /// <param name="quote">New quote</param>
+        /// <param name="type">Selling or Purchase</param>
+        /// <returns></returns>
+        private void ReviewPendingOrders(double quote, OrderType type)
+        {
+            Console.WriteLine("All pending orders of " + (type == OrderType.Selling ? "selling" : "purchase") + " must be updated");
+            
+            List<Order> orders = db.GetPendingOrders(false);
+
+            foreach(Order order in orders)
+            {
+                if(order.Type == type)
+                {
+                    long available = order.Available + 1;
+
+                    db.UpdateAvailableOrder(type, order.Id, available);
+
+                    // notify user
+                    if (users_logged.ContainsKey("" + order.UserId))
+                    {
+                        IClient rem = (IClient)RemotingServices.Connect(typeof(IClient),users_logged["" + order.UserId].ToString());
+                        rem.pendingOrderSuspended(type, "" + order.Id);
+
+                        this.timer = new System.Threading.Timer(x =>
+                        {
+                            this.handlePendingOrdersTimeOut(type, order.Id);
+                        }, null, 60*1000, Timeout.Infinite);
+                    }
+
+
+                    
+                        
+                     
+                }
+
+            }
+            
+
+        }
+
+
+        private void handlePendingOrdersTimeOut(OrderType type, long orderId)
+        {
+            Console.WriteLine("Passou um segundo na ordem: " + orderId);
+            List<Order> orders = db.GetPendingOrders( false);
+            foreach (Order order in orders)
+            {
+                if(order.Id == orderId && order.Type == type)
+                {
+                    Console.WriteLine("Ordem: " + orderId + "  available: " + order.Available);
+                    long available = order.Available - 1;
+                    if (available < 0) available = 0;
+                    db.UpdateAvailableOrder(type, order.Id, available);
+
+                    // tell the user that his order is no longer suspended
+                    if (available == 0) {
+                        IClient rem = (IClient)RemotingServices.Connect(typeof(IClient), users_logged["" + order.UserId].ToString());
+                        rem.pendingOrderNotSuspended(type, "" + orderId);     
+                    }
+
+                }
+            }
+
+            
         }
 
 
@@ -158,7 +251,7 @@ namespace Server
         /// <param name="username">Username.</param>
         /// <param name="password">Password.</param>
         /// <returns>Serialized user that logged in.</returns>
-        public string Login(string username, string password)
+        public string Login(string username, string password, string address)
         {
             Log("Logging in user...");
 
@@ -167,6 +260,7 @@ namespace Server
             if (user != null)
             {
                 Log("Login successful.");
+                users_logged.Add("" + user.Id, address);
             }
             else
             {
@@ -223,7 +317,7 @@ namespace Server
         /// <returns>List of pending orders.</returns>
         public string GetPendingOrders(long userId)
         {
-            List<Order> orders = db.GetPendingOrders(userId);
+            List<Order> orders = db.GetPendingOrders(userId, false);
 
             return JsonConvert.SerializeObject(orders);
         }
@@ -288,5 +382,24 @@ namespace Server
                 file.WriteLine(DateTime.Now.ToString("[HH:mm:ss] [Server] ") + str);
             }
         }
+
+        public void Logout(string id)
+        {
+            users_logged.Remove(id);
+        }
+
+        public bool ConfirmOrder(OrderType type, long orderId)
+        {
+            return db.UpdateAvailableOrder(type, orderId, 0);
+        }
+
+        public void UpdateUser(long userId)
+        {
+            if(users_logged.ContainsKey("" + userId)) { 
+                IClient rem = (IClient)RemotingServices.Connect(typeof(IClient), users_logged["" + userId].ToString());
+                rem.updateUserInterface();
+            }
+        }
+
     }
 }

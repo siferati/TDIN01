@@ -43,92 +43,117 @@ namespace Client
 
         public void inicialize_wallet()
         {
-            client.UpdateUser();
-            updateFullName(client.User.Name);
-            double quote = client.GetQuote();
-            updateBalance("" + client.User.Money);
-            updateQuote("" + quote);
-            updateDiginotesOwned("" + client.User.Wallet.Count);
+            if (InvokeRequired)                                                                     // I'm not in UI thread
+                BeginInvoke((MethodInvoker)delegate { inicialize_wallet(); });
+            else { 
+                client.UpdateUser();
+                updateFullName(client.User.Name);
+                double quote = client.GetQuote();
+                updateBalance("" + client.User.Money);
+                updateQuote("" + quote);
+                updateDiginotesOwned("" + client.User.Wallet.Count);
 
-            List<Common.Order> orders_pending = client.GetPendingOrders();
-            long aux = 0;
-            foreach (Common.Order order in orders_pending)
-            {
-                if(order.Type == Common.Order.OrderType.Purchase)
+                List<Common.Order> orders_pending = client.GetPendingOrders();
+                long aux = 0;
+                foreach (Common.Order order in orders_pending)
                 {
-                    aux += (long)(order.Amount * quote);
+                    if(order.Type == Common.Order.OrderType.Purchase)
+                    {
+                        aux += (long)(order.Amount * quote);
+                    }
                 }
-            }
-            updateAvailableBalance("" + (client.User.Money - aux));
-            
+                updateAvailableBalance("" + (client.User.Money - aux));
 
+            }
 
         }
 
         public void inicialize_purchase()
         {
-            List<Common.Order> orders_pending = client.GetPendingOrders();
-            long aux = 0;
-            double quote = client.GetQuote();
-            dataGridView1.Rows.Clear();
-            ArrayList row = new ArrayList();
-            foreach (Common.Order order in orders_pending)
-            {
-                if (order.Type == Common.Order.OrderType.Purchase)
-                {
-                    aux += (long)(order.Amount);
-
-                    row = new ArrayList();
-                    row.Add(order.Timestamp);
-                    row.Add(order.Amount);
-                    row.Add("Apagar");
-                    dataGridView1.Rows.Add(row.ToArray());
-
-                }
-            }
-            if (aux != 0)
-                panel19.Visible = true;
+            if (InvokeRequired)                                                                     // I'm not in UI thread
+                BeginInvoke((MethodInvoker)delegate { inicialize_purchase(); });
             else
-                panel19.Visible = false;
+            {
+                List<Common.Order> orders_pending = client.GetPendingOrders();
+                long aux = 0;
+                double quote = client.GetQuote();
+                dataGridView1.Rows.Clear();
+                ArrayList row = new ArrayList();
+                foreach (Common.Order order in orders_pending)
+                {
+                    if (order.Type == Common.Order.OrderType.Purchase)
+                    {
+                        aux += ((long)(order.Amount) - (long)(order.CurrentAmount));
 
-            updateBuying("" + aux);
-            updateQuote("" + quote);
-            updateAvailableBalance("" + (client.User.Money - aux * quote));
+                        row = new ArrayList();
+                        row.Add(order.Id);
+                        row.Add(order.Timestamp);
+                        row.Add(order.Amount - order.CurrentAmount);
 
+                        if (order.Available > 0)
+                            row.Add("Confirm");
+                        else
+                            row.Add("");
+                        row.Add("Delete");
+                        dataGridView1.Rows.Add(row.ToArray());
 
+                    }
+                }
+                if (aux != 0)
+                    panel19.Visible = true;
+                else
+                    panel19.Visible = false;
+
+                updateBuying("" + aux);
+                updateQuote("" + quote);
+                updateAvailableBalance("" + (client.User.Money - aux * quote));
+
+            }
         }
 
         public void inicialize_selling()
         {
-            List<Common.Order> orders_pending = client.GetPendingOrders();
-            long aux = 0;
-            double quote = client.GetQuote();
-            dataGridView2.Rows.Clear();
-            ArrayList row = new ArrayList();
-            foreach (Common.Order order in orders_pending)
-            {
-                if (order.Type == Common.Order.OrderType.Selling)
-                {
-                    aux += (long)(order.Amount);
-
-                    row = new ArrayList();
-                    row.Add(order.Timestamp);
-                    row.Add(order.Amount);
-                    row.Add("Apagar");
-                    dataGridView2.Rows.Add(row.ToArray());
-
-                }
-            }
-            if (aux != 0)
-                panel1ChangeQuote.Visible = true;
+            if (InvokeRequired)                                                                     // I'm not in UI thread
+                BeginInvoke((MethodInvoker)delegate { inicialize_selling(); });
             else
-                panel1ChangeQuote.Visible = false;
+            {
+                List<Common.Order> orders_pending = client.GetPendingOrders();
+                long aux = 0;
+                double quote = client.GetQuote();
+                dataGridView2.Rows.Clear();
+                ArrayList row = new ArrayList();
+                foreach (Common.Order order in orders_pending)
+                {
+                    if (order.Type == Common.Order.OrderType.Selling)
+                    {
+                        aux += ((long)(order.Amount) - (long)(order.CurrentAmount));
 
-            updateSelling("" + aux);
-            updateQuote("" + quote);
-            updateDiginotesOwned("" + client.User.Wallet.Count);
+                        row = new ArrayList();
+                        row.Add(order.Id);
+                        row.Add(order.Timestamp);
+                        row.Add(order.Amount);
+
+                        if (order.Available > 0)
+                            row.Add("Confirm");
+                        else
+                            row.Add("");
+                        row.Add("Delete");
+                        dataGridView2.Rows.Add(row.ToArray());
 
 
+
+                    }
+                }
+                if (aux != 0)
+                    panel1ChangeQuote.Visible = true;
+                else
+                    panel1ChangeQuote.Visible = false;
+
+                updateSelling("" + aux);
+                updateQuote("" + quote);
+                updateDiginotesOwned("" + client.User.Wallet.Count);
+
+            }
         }
 
 
@@ -160,11 +185,18 @@ namespace Client
             this.label18.Text = no;
         }
 
-        private void updateQuote(string quote)
+        public void updateQuote(string quote)
         {
-            this.labelQuote.Text = quote;
-            this.label32.Text = quote;
-            this.label6.Text = quote;
+            if (InvokeRequired)                                               // I'm not in UI thread
+                BeginInvoke((MethodInvoker)delegate { updateQuote(quote); });  // Invoke using an anonymous delegate
+            else
+            {
+                this.labelQuote.Text = quote;
+                this.label32.Text = quote;
+                this.label6.Text = quote;
+            }
+
+            
         }
 
         private void updateBalance(string balance)
@@ -172,7 +204,7 @@ namespace Client
             this.Balance.Text = balance;
         }
 
-        private void add_transactions(string type, string quantity, string quote, string date)
+     /*   private void add_transactions(string type, string quantity, string quote, string date)
         {
 
             ListViewItem lvi = new ListViewItem(date);
@@ -181,7 +213,7 @@ namespace Client
             lvi.SubItems.Add(quote);
             this.History.Items.Add(lvi);
 
-        }
+        }*/
 
 
         private void button3_Click(object sender, EventArgs e)
@@ -206,6 +238,8 @@ namespace Client
 
         private void buttonSellingOrder_Click(object sender, EventArgs e)
         {
+            if (status != Status.NONE)
+                return;
             erase_messages();
             inicialize_selling();
             this.panelMyWallet.Visible = false;
@@ -220,6 +254,8 @@ namespace Client
 
         private void buttonPurchaseOrder_Click(object sender, EventArgs e)
         {
+            if (status != Status.NONE)
+                return;
             erase_messages();
             inicialize_purchase();
             this.panelMyWallet.Visible = false;
@@ -259,7 +295,7 @@ namespace Client
                         
 
                         this.put_message_buy_error("Not All Diginotes were bought. You must define a new quote (higher or equal) than the current quote (" + currentQuote + ")");
-                        this.panelNewBuyOrder.Visible = true;
+                        this.panelNewBuyOrder.Visible = false;
                         this.panelBuyProgress.Visible = false;
                         this.panelDefineQuoteBuy.Visible = true;
                         this.status = Status.BUYING;
@@ -356,7 +392,10 @@ namespace Client
                 this.put_message_buy_error("Defined quote is smaller than the current quote (" + currentQuote + ")");
             }else
             {
-                client.AddQuote(quote);
+                this.panelNewBuyOrder.Visible = true;
+                this.panelBuyProgress.Visible = false;
+                this.panelDefineQuoteBuy.Visible = false;
+                client.AddQuote(quote, Common.Order.OrderType.Purchase);
                 this.status = Status.NONE;
                 this.put_message_buy_success("Order Successufully created");
                 this.inicialize_purchase();
@@ -376,12 +415,12 @@ namespace Client
             client.AddMoney(amount);
 
             // update
-            long aux = Convert.ToInt64(this.Balance.Text);
+            Double aux = Convert.ToDouble(this.Balance.Text);
             aux += amount;
             this.Balance.Text = "" + aux;
             this.bunifuMaterialTextbox8.Text = "";
 
-            aux = Convert.ToInt64(this.label35.Text);
+            aux = Convert.ToDouble(this.label35.Text);
             aux += amount;
             updateAvailableBalance(""  + aux);
 
@@ -398,24 +437,17 @@ namespace Client
             client.AddMoney(-amount);
 
             // update
-            long aux = Convert.ToInt64( this.Balance.Text);
+            double aux = Convert.ToDouble( this.Balance.Text);
             aux -= amount;
             this.Balance.Text = "" + aux;
             this.bunifuMaterialTextbox12.Text = "";
 
-            aux = Convert.ToInt64(this.label35.Text);
+            aux = Convert.ToDouble(this.label35.Text);
             aux -= amount;
             updateAvailableBalance("" + aux);
         }
 
-        /* erases an order */
-        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if(e.ColumnIndex == 2)
-            {
-                MessageBox.Show("" + e.RowIndex);
-            }
-        }
+       
 
 
         /* When a user is in purchase orders and whants to update quote */
@@ -442,7 +474,7 @@ namespace Client
             }
             else
             {
-                client.AddQuote(quote);
+                client.AddQuote(quote, Common.Order.OrderType.Purchase);
                 this.status = Status.NONE;
                 this.put_message_buy_success("Quote Successufully updated");
                 label32.Text = input;
@@ -542,7 +574,7 @@ namespace Client
             }
             else
             {
-                client.AddQuote(quote);
+                client.AddQuote(quote, Common.Order.OrderType.Selling);
                 this.status = Status.NONE;
                 this.put_message_buy_success("Order Successufully created");
                 this.panelNewSellOrder.Visible = true;
@@ -578,7 +610,7 @@ namespace Client
             }
             else
             {
-                client.AddQuote(quote);
+                client.AddQuote(quote, Common.Order.OrderType.Selling);
                 this.status = Status.NONE;
                 this.put_message_sell_success("Quote Successufully updated");
                 label6.Text = input;
@@ -586,6 +618,147 @@ namespace Client
 
             this.inicialize_selling();
 
+        }
+
+        private void dataGridView2_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if(e.ColumnIndex == 3 && !dataGridView2.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.Equals(""))
+            {
+                MessageBox.Show("" + e.RowIndex + " wants to be confirmed");
+
+                client.DeleteOrder(Common.Order.OrderType.Selling, Int64.Parse(dataGridView2.Rows[e.RowIndex].Cells[0].Value.ToString()));
+                client.AddOrder(Common.Order.OrderType.Selling, Int64.Parse(dataGridView2.Rows[e.RowIndex].Cells[2].Value.ToString()));
+
+                //client.confirmOrder(Common.Order.OrderType.Selling, Int64.Parse(dataGridView2.Rows[e.RowIndex].Cells[0].Value.ToString()));
+                inicialize_selling();
+                
+
+            }else if(e.ColumnIndex == 4)
+            {
+                DialogResult dr = MessageBox.Show("Are you sure you want to delete this selling order?\nIf you choose to delete this selling order you can undo it by creating another one", "Are you sure?", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
+
+                if (dr == DialogResult.Yes)
+                {
+                    client.DeleteOrder(Common.Order.OrderType.Selling, Int64.Parse(dataGridView2.Rows[e.RowIndex].Cells[0].Value.ToString()));
+                    inicialize_selling();
+                }
+                else if (dr == DialogResult.Cancel || dr == DialogResult.No)
+                {
+                    return;
+                }
+                
+                //MessageBox.Show("" + dataGridView2.Rows[e.RowIndex].Cells[0].Value + " wants to be " + dataGridView2.Rows[e.RowIndex].Cells[e.ColumnIndex].Value);
+            }
+        }
+
+
+        public void pendingOrderSuspended(Common.Order.OrderType type, string orderId)
+        {
+            if (InvokeRequired)                                                                     // I'm not in UI thread
+                BeginInvoke((MethodInvoker)delegate { pendingOrderSuspended(type, orderId); });     // Invoke using an anonymous delegate
+            else
+            {
+                if (type == Common.Order.OrderType.Purchase)
+                {
+                    for (int i = 0; i < dataGridView1.Rows.Count - 1; i++)
+                    {
+                        string id = "" + (long)dataGridView1.Rows[i].Cells[0].Value;
+                        if (id.Equals(orderId))
+                        {
+                            dataGridView1.Rows[i].Cells[3].Value = "Confirm";
+                            
+                        }
+                    }
+                }
+                else if (type == Common.Order.OrderType.Selling)
+                {
+                     for (int i = 0; i < dataGridView2.Rows.Count - 1; i++)
+                    {
+                        string id = "" + (long)dataGridView2.Rows[i].Cells[0].Value;
+                        if (id.Equals(orderId))
+                        {
+                            dataGridView2.Rows[i].Cells[3].Value = "Confirm";
+                            
+                        }
+                    } 
+                    
+                }
+            }
+
+
+        }
+
+
+        public void pendingOrderNotSuspended(Common.Order.OrderType type, string orderId)
+        {
+            if (InvokeRequired)                                               // I'm not in UI thread
+                BeginInvoke((MethodInvoker)delegate { pendingOrderNotSuspended(type, orderId); });  // Invoke using an anonymous delegate
+            else { 
+                if (type == Common.Order.OrderType.Purchase)
+                {
+                    for (int i = 0; i < dataGridView1.Rows.Count - 1; i++)
+                    {
+                        string id = "" + (long)dataGridView1.Rows[i].Cells[0].Value;
+                        if (id.Equals(orderId))
+                        {
+                            dataGridView1.Rows[i].Cells[3].Value = "";
+                            client.DeleteOrder(Common.Order.OrderType.Purchase, Int64.Parse(dataGridView1.Rows[i].Cells[0].Value.ToString()));
+                            client.AddOrder(Common.Order.OrderType.Purchase, Int64.Parse(dataGridView1.Rows[i].Cells[2].Value.ToString()));
+                            return;
+                        }
+                    }
+                }
+                else if (type == Common.Order.OrderType.Selling)
+                {
+                    for (int i = 0; i < dataGridView2.Rows.Count - 1; i++)
+                    {
+                        string id = "" + (long)dataGridView1.Rows[i].Cells[0].Value;
+                        if (id.Equals(orderId))
+                        {
+                            dataGridView2.Rows[i].Cells[3].Value = "";
+                            client.DeleteOrder(Common.Order.OrderType.Selling, Int64.Parse(dataGridView2.Rows[i].Cells[0].Value.ToString()));
+                            client.AddOrder(Common.Order.OrderType.Selling, Int64.Parse(dataGridView2.Rows[i].Cells[2].Value.ToString()));
+                            return;
+                        }
+                    }
+                }
+
+            }
+        }
+
+        private void dataGridView1_CellClick_1(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.ColumnIndex == 3 && !dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.Equals(""))
+            {
+
+                client.DeleteOrder(Common.Order.OrderType.Purchase, Int64.Parse(dataGridView1.Rows[e.RowIndex].Cells[0].Value.ToString()));
+                client.AddOrder(Common.Order.OrderType.Purchase, Int64.Parse(dataGridView1.Rows[e.RowIndex].Cells[2].Value.ToString()));
+                //MessageBox.Show("" + e.RowIndex + " wants to be confirmed");
+                //client.confirmOrder(Common.Order.OrderType.Purchase, Int64.Parse(dataGridView1.Rows[e.RowIndex].Cells[0].Value.ToString()));
+                inicialize_purchase();
+
+            }
+            else if (e.ColumnIndex == 4)
+            {
+                DialogResult dr = MessageBox.Show("Are you sure you want to delete this purchase order?\nIf you choose to delete this purchase order you can undo it by creating another one", "Are you sure?", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
+
+                if (dr == DialogResult.Yes)
+                {
+                    client.DeleteOrder(Common.Order.OrderType.Purchase, Int64.Parse(dataGridView1.Rows[e.RowIndex].Cells[0].Value.ToString()));
+                    inicialize_purchase();
+                }
+                else if (dr == DialogResult.Cancel || dr == DialogResult.No)
+                {
+                    return;
+                }
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            client.Logout();
+            this.Hide();
+            Client.form.Show();
         }
     }
 }

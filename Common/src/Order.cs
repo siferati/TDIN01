@@ -44,6 +44,11 @@ namespace Common
         /// </summary>
         public OrderType Type { get; }
 
+        /// <summary>
+        /// Whether order is supended or not
+        /// </summary>
+        public long Available { get; set; }
+
 
         /* --- METHODS --- */
 
@@ -56,7 +61,7 @@ namespace Common
         /// <param name="timestamp">Timestamp this order was issued.</param>
         /// <param name="amount">Amount of diginotes to buy / sell.</param>
         /// <param name="currentAmount">Amount of diginotes bought / sold.</param>
-        public Order(long id, long userId, OrderType type, DateTime timestamp, long amount, long currentAmount = 0)
+        public Order(long id, long userId, OrderType type, DateTime timestamp, long amount, long available = 0, long currentAmount = 0)
         {
             this.Id = id;
             this.UserId = userId;
@@ -64,6 +69,7 @@ namespace Common
             this.Timestamp = timestamp;
             this.Amount = amount;
             this.CurrentAmount = currentAmount;
+            this.Available = available;
         }
 
 
